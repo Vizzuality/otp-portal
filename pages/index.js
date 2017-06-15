@@ -54,6 +54,7 @@ class HomePage extends Page {
   onSubmit(e) {
     e && e.preventDefault();
 
+    let status;
     // Validate the form
     FORM_ELEMENTS.validate();
 
@@ -73,15 +74,17 @@ class HomePage extends Page {
           body: JSON.stringify(this.state.form)
         })
           .then((response) => {
-            if (response.ok) return response.json();
-            throw new Error(response.statusText);
+            status = response.ok;
+            return response.json();
           })
-          .then((contact) => {
-            toastr.success('Congratulations!!', 'You\'ve been added to our mailing list.');
-          })
-          .catch((err) => {
-            toastr.error('Error', 'Email has already been taken.');
-            console.error(err);
+          .then((data) => {
+            if (status) {
+              toastr.success('Congratulations!!', 'You\'ve been added to our mailing list.');
+            } else {
+              Object.keys(data).forEach((d) => {
+                toastr.error('Error', `${d}: ${data[d]}`);
+              });
+            }
           });
       }
     }, 0);
