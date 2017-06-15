@@ -1,0 +1,6 @@
+
+          window.__NEXT_REGISTER_PAGE('/auth/not-configured', function() {
+            var comp = module.exports=webpackJsonp([10],{395:function(e,t,u){"use strict";function n(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(t,"__esModule",{value:!0});var l=u(5),r=n(l),a=u(2),i=n(a),o=u(3),d=n(o),f=u(7),s=n(f),c=u(6),p=n(c),h=u(0),m=n(h),_=u(1),g=n(_),E=u(20),v=n(E),b=u(26),y=n(b),N=u(27),j=u(33),k=n(j),x=u(32),M=n(x),T=function(e){function t(){return(0,i.default)(this,t),(0,s.default)(this,(t.__proto__||(0,r.default)(t)).apply(this,arguments))}return(0,p.default)(t,e),(0,d.default)(t,[{key:"render",value:function(){return m.default.createElement(M.default,{title:"Not configured",description:"Not configured description...",session:this.props.session},m.default.createElement("h2",null,"Not configured"),m.default.createElement("p",null,"This oAuth provider has not been configured."),m.default.createElement("p",null,m.default.createElement(v.default,{href:"/auth/signin"},m.default.createElement("a",null,"Sign in via email"))))}}]),t}(k.default);T.propTypes={session:g.default.object.isRequired},t.default=(0,y.default)(N.store)(T)},893:function(e,t,u){e.exports=u(395)}},[893]);
+            return { page: comp.default }
+          })
+        

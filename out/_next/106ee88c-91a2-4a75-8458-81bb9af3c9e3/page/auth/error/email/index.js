@@ -1,0 +1,6 @@
+
+          window.__NEXT_REGISTER_PAGE('/auth/error/email', function() {
+            var comp = module.exports=webpackJsonp([12],{393:function(e,t,n){"use strict";function l(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(t,"__esModule",{value:!0});var u=n(5),a=l(u),r=n(2),i=l(r),s=n(3),o=l(s),d=n(7),f=l(d),c=n(6),p=l(c),m=n(0),h=l(m),E=n(1),_=l(E),y=n(20),b=l(y),g=n(33),k=l(g),v=n(32),w=l(v),j=n(26),q=l(j),x=n(27),M=function(e){function t(){return(0,i.default)(this,t),(0,f.default)(this,(t.__proto__||(0,a.default)(t)).apply(this,arguments))}return(0,p.default)(t,e),(0,o.default)(t,[{key:"render",value:function(){return h.default.createElement(w.default,{title:"Error email",description:"Error email description...",session:this.props.session},h.default.createElement("h2",null,"Unable to sign in"),h.default.createElement("p",null,"The link you tried to use to sign in was not valid."),h.default.createElement("p",null,h.default.createElement(b.default,{href:"/auth/signin"},h.default.createElement("a",null,"Request a new sign in link."))))}}]),t}(k.default);M.propTypes={session:_.default.object.isRequired},t.default=(0,q.default)(x.store)(M)},891:function(e,t,n){e.exports=n(393)}},[891]);
+            return { page: comp.default }
+          })
+        

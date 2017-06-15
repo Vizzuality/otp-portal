@@ -74,6 +74,7 @@
   },
   "scripts": {
     "dev": "NODE_ENV=development node index.js",
+    "export": "next build && next export",
     "build": "next build",
     "start": "node index.js"
   },

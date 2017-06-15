@@ -1,0 +1,6 @@
+
+          window.__NEXT_REGISTER_PAGE('/auth/check-email', function() {
+            var comp = module.exports=webpackJsonp([13],{392:function(e,t,u){"use strict";function n(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(t,"__esModule",{value:!0});var l=u(5),a=n(l),i=u(2),s=n(i),o=u(3),r=n(o),d=u(7),f=n(d),c=u(6),p=n(c),h=u(0),m=n(h),_=u(1),k=n(_),y=u(26),b=n(y),v=u(27),C=u(33),E=n(C),j=u(32),w=n(j),x=function(e){function t(){return(0,s.default)(this,t),(0,f.default)(this,(t.__proto__||(0,a.default)(t)).apply(this,arguments))}return(0,p.default)(t,e),(0,r.default)(t,[{key:"render",value:function(){return m.default.createElement(w.default,{title:"Check email",description:"Check email description...",session:this.props.session},m.default.createElement("h2",null,"Check your email"),m.default.createElement("p",null,"You have been sent an email with a link you can use to sign in."))}}]),t}(E.default);x.propTypes={session:k.default.object.isRequired},t.default=(0,b.default)(v.store)(x)},890:function(e,t,u){e.exports=u(392)}},[890]);
+            return { page: comp.default }
+          })
+        
