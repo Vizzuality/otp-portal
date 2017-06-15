@@ -47,6 +47,7 @@ module.exports = {
 
     return config;
   },
+  // assetPrefix: 'otp-portal',
   exportPathMap: () => ({
     '/': { page: '/' }
   })
