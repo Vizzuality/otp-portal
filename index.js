@@ -102,13 +102,6 @@ app.prepare()
       res.send(sassResult.css);
     });
 
-    // A simple example of a custom route
-    // Says requests to '/route/{anything}' will be handled by 'pages/routing.js'
-    // and the {anything} part will be pased to the page in parameters.
-    // server.get('/route/:id', (req, res) => {
-    //   return app.render(req, res, '/routing', req.params);
-    // });
-
     server.get('/operators', (req, res) => {
       const { query } = parse(req.url, true);
       return app.render(req, res, '/operators', Object.assign(req.params, query));

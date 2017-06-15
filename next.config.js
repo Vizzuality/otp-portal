@@ -48,6 +48,6 @@ module.exports = {
     return config;
   },
   exportPathMap: () => ({
-    '/otp-portal': { page: '/' }
+    '/': { page: '/' }
   })
 };
