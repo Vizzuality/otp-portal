@@ -22,23 +22,8 @@ export default class NavigationList extends React.Component {
     return (
       <ul className={classNames}>
         <li>
-          <Link prefetch href="/operators">
-            <a className={!hideActive ? this.setActive(['/operators', '/operators-detail']) : ''}>Operators</a>
-          </Link>
-        </li>
-        <li>
-          <Link prefetch href="/observations">
-            <a className={!hideActive ? this.setActive(['/observations']) : ''}>Observations</a>
-          </Link>
-        </li>
-        <li>
-          <Link prefetch href="/help">
-            <a className={!hideActive ? this.setActive(['/help']) : ''}>Help</a>
-          </Link>
-        </li>
-        <li>
-          <Link prefetch href="/about">
-            <a className={!hideActive ? this.setActive(['/about']) : ''}>About</a>
+          <Link href="/">
+            <a className={!hideActive ? this.setActive(['/']) : ''}>Coming soon</a>
           </Link>
         </li>
       </ul>

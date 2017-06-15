@@ -1,7 +1,8 @@
 .c-button {
+  cursor: pointer;
   display: inline-block;
   align-items: center;
-  padding: 9px 25px 8px;
+  padding: 11px 25px 9px;
   text-align: center;
   letter-spacing: 2px;
   font-family: $font-family-proximanova;
@@ -14,6 +15,7 @@
   white-space: nowrap;
   text-decoration: none;
   transition: all .1s linear;
+  outline: none;
 
   // STATES
   &.-disabled {
@@ -53,12 +55,13 @@
   }
 
   &.-tertiary {
-    border-color: $color-tertiary;
+    border-color: $color-gray-1;
     color: $color-text-1;
     background: $color-tertiary;
 
     &:hover {
-      color: darken($color-text-1, 10%);
+      background: $color-gray-1;
+      color: $color-text-2;
     }
   }
 

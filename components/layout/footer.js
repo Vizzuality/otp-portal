@@ -1,27 +1,7 @@
 import React from 'react';
-import Link from 'next/link';
-import NavigationList from 'components/ui/navigation-list';
-
 
 export default() => (
   <footer className="c-footer">
-    <div className="upper-footer">
-      <div className="l-container">
-        <div className="footer-container">
-          <div className="footer-item">
-            <h1 className="logo">
-              <Link prefetch href="/">
-                <a>Open Timber Portal</a>
-              </Link>
-            </h1>
-          </div>
-          <div className="footer-item">
-            <NavigationList hideActive />
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div className="lower-footer">
       <div className="l-container">
         <div className="footer-container">

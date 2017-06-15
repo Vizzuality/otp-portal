@@ -2,8 +2,11 @@
   position: relative;
   width: 100%;
   padding: $space-1 * 4;
-  padding-bottom: 100px;
   background: $color-tertiary;
+
+  a {
+    color: $color-text-1;
+  }
 
   .card-content {
     > * {
@@ -62,5 +65,10 @@
 
   &.-tertiary {
     background: $color-tertiary;
+  }
+
+  // VARIANTS
+  &.-has-link {
+    padding-bottom: 100px;
   }
 }

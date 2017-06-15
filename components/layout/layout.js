@@ -45,7 +45,7 @@ export default class Layout extends React.Component {
 
         {footer !== false && <Footer />}
 
-        <Modal />
+        {/* <Modal /> */}
       </div>
     );
   }

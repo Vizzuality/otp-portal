@@ -7,7 +7,8 @@ import Link from 'next/link';
 
 export default function Card({ theme, letter, title, description, link }) {
   const classNames = classnames({
-    [theme]: !!theme
+    [theme]: !!theme,
+    '-has-link': !!link
   });
 
   return (
@@ -16,12 +17,14 @@ export default function Card({ theme, letter, title, description, link }) {
         {letter && <div className="card-letter"> {letter} </div>}
 
         <h2 className="c-title -extrabig -uppercase -proximanova card-title"> {title} </h2>
-        <p className="card-description"> {description} </p>
+        <p className="card-description" dangerouslySetInnerHTML={{ __html: description }} />
       </div>
 
-      <Link {...link} >
-        <a className="card-link c-button -primary -fullwidth">{link.label}</a>
-      </Link>
+      {link &&
+        <Link {...link} >
+          <a className="card-link c-button -primary -fullwidth">{link.label}</a>
+        </Link>
+      }
     </div>
   );
 }
