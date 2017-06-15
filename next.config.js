@@ -45,10 +45,11 @@ module.exports = {
       })
     );
 
+    if (config.resolve.alias) {
+      delete config.resolve.alias['react'];
+      delete config.resolve.alias['react-dom'];
+    }
+
     return config;
-  },
-  // assetPrefix: 'otp-portal',
-  exportPathMap: () => ({
-    '/': { page: '/' }
-  })
+  }
 };
