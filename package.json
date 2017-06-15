@@ -44,6 +44,7 @@
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
     "react-redux": "^4.4.6",
+    "react-redux-toastr": "^6.2.7",
     "react-select": "^1.0.0-rc.5",
     "react-sticky": "^6.0.1",
     "react-table": "^6.2.0",
@@ -76,7 +77,8 @@
     "dev": "NODE_ENV=development node index.js",
     "export": "NODE_ENV=development next build && next export",
     "build": "next build",
-    "start": "node index.js"
+    "start": "node index.js",
+    "heroku-postbuild": "next build"
   },
   "engines": {
     "node": "7.x.x"

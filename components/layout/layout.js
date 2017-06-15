@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import ReduxToastr from 'react-redux-toastr';
 
 // Components
 import Header from 'components/layout/header';
@@ -46,6 +47,14 @@ export default class Layout extends React.Component {
         {footer !== false && <Footer />}
 
         {/* <Modal /> */}
+
+        <ReduxToastr
+          timeOut={4000}
+          preventDuplicates
+          position="top-right"
+          transitionIn="fadeIn"
+          transitionOut="fadeOut"
+        />
       </div>
     );
   }

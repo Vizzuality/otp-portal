@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { toastr } from 'react-redux-toastr'
 
 // Redux
 import withRedux from 'next-redux-wrapper';
@@ -75,10 +76,11 @@ class HomePage extends Page {
             if (response.ok) return response.json();
             throw new Error(response.statusText);
           })
-          .then((operators) => {
-            console.info(operators);
+          .then((contact) => {
+            toastr.success('Congratulations!!', 'You\'ve been added to our mailing list.');
           })
           .catch((err) => {
+            toastr.error('Error', 'Email has already been taken.');
             console.error(err);
           });
       }

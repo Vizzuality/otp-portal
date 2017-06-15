@@ -42,7 +42,7 @@ export default class StaticSection extends React.Component {
         <div className={`c-static-box ${this.setPosition()}`}>
           <div className="l-container">
             <div className={`row collapse ${this.setJustify()}`}>
-              <div className={`columns small-${column}`}>
+              <div className={`columns small-12 medium-${column}`}>
                 {children}
               </div>
             </div>
