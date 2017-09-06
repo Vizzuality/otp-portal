@@ -149,7 +149,7 @@ class HomePage extends Page {
         >
           <Card
             theme="-secondary"
-            title="The launching date is August 2017"
+            title="The launching date is September 2017"
             description="In the meantime, if you have any questions and requests about the Open Timber Portal, please contact us at <a href='mailto:opentimberportal@wri.org'>opentimberportal@wri.org</a>"
           />
         </StaticSection>
