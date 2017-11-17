@@ -1,5 +1,4 @@
 .next/
-lang/
 node_modules/
 static/tiles
 /npm-debug.log

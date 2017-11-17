@@ -88,6 +88,6 @@
     "start": "node index.js",
     "transifex:push": "node transifex/transifex-push.js",
     "transifex:pull": "node transifex/transifex-pull.js",
-    "heroku-postbuild": "npm run transifex:pull && next build"
+    "heroku-postbuild": "next build"
   }
 }
