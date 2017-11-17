@@ -7,6 +7,8 @@ const translations = require(`../${process.env.LOCALES_PATH}/${process.env.TRANS
 
 // Endpoint for source language translations
 const url = `${process.env.TRANSIFEX_URL}/${process.env.TRANSIFEX_PROJECT}/resource/${process.env.TRANSIFEX_SLUG}/content?format=json`;
+console.info(url);
+
 
 // Request config
 const json = {
@@ -25,10 +27,10 @@ const fetchConfig = {
 // PUT en.json
 fetch(url, fetchConfig)
   .then(res => res.json())
-  .then((json) => {
-    console.log(json);
-    console.log('Translation successfully uploaded!');
+  .then((response) => {
+    console.info(response);
+    console.info('Translation successfully uploaded!');
   })
   .catch((err) => {
-    console.log(err);
+    console.info(err);
   });

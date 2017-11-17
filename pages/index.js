@@ -18,10 +18,29 @@ import StaticSection from 'components/ui/static-section';
 import Card from 'components/ui/card';
 import Field from 'components/form/field';
 import Input from 'components/form/input';
-
+import Checkbox from 'components/form/checkbox';
 
 // Constants
 export const FORM_ELEMENTS = {
+  elements: {},
+  validate() {
+    const elements = this.elements;
+    Object.keys(elements).forEach((k) => {
+      elements[k].validate();
+    });
+  },
+  isValid() {
+    const elements = this.elements;
+    const valid = Object.keys(elements)
+      .map(k => elements[k].isValid())
+      .filter(v => v !== null)
+      .every(element => element);
+
+    return valid;
+  }
+};
+
+export const FORM_ELEMENTS_STAGING = {
   elements: {},
   validate() {
     const elements = this.elements;
@@ -48,12 +67,17 @@ class HomePage extends Page {
     this.state = {
       form: {
         email: null
+      },
+      formStaging: {
+        staging: false
       }
     };
 
     // BINDINGS
     this.onSubmit = this.onSubmit.bind(this);
+    this.onStagingSubmit = this.onStagingSubmit.bind(this);
     this.setStateForm = this.setStateForm.bind(this);
+    this.setStateFormStaging = this.setStateFormStaging.bind(this);
   }
 
   onSubmit(e) {
@@ -95,6 +119,18 @@ class HomePage extends Page {
     }, 0);
   }
 
+  onStagingSubmit(e) {
+    e && e.preventDefault();
+
+    const valid = this.state.formStaging.staging;
+    if (valid) {
+      // Start the submitting
+      window.location = 'http://otp.vizzuality.com/';
+    } else {
+      toastr.error('Error', this.props.intl.formatMessage({ id: 'landing.card.checkbox.error' }));
+    }
+  }
+
   setStateForm(name, value) {
     const form = {
       ...this.state.form,
@@ -102,6 +138,15 @@ class HomePage extends Page {
     };
 
     this.setState({ form });
+  }
+
+  setStateFormStaging(name, value) {
+    const formStaging = {
+      ...this.state.formStaging,
+      [name]: value
+    };
+
+    this.setState({ formStaging });
   }
 
   render() {
@@ -126,7 +171,7 @@ class HomePage extends Page {
                 __html: this.props.intl.formatHTMLMessage({ id: 'home.intro' })
               }}
             />
-            <p>Are you interested in receiving updates on the OTP development? Register for our mailing list by adding your email address here.</p>
+            <p>{this.props.intl.formatMessage({ id: 'home.intro.description' })}</p>
 
             <form className="c-form" onSubmit={this.onSubmit} noValidate>
               <Field
@@ -145,21 +190,48 @@ class HomePage extends Page {
                 {Input}
               </Field>
 
-              <button className="c-button -tertiary" type="submit">Send</button>
+              <button className="c-button -tertiary" type="submit">{this.props.intl.formatMessage({ id: 'send' })}</button>
             </form>
           </div>
         </StaticSection>
+
+
+
 
         {/* SECTION A */}
         <StaticSection
           background="/static/images/home/bg-a.jpg"
           position={{ top: true, left: true }}
-          column={4}
+          column={6}
         >
           <Card
             theme="-secondary"
-            title="The launching date is September 2017"
-            description="In the meantime, if you have any questions and requests about the Open Timber Portal, please contact us at <a href='mailto:opentimberportal@wri.org'>opentimberportal@wri.org</a>"
+            title={this.props.intl.formatMessage({ id: 'landing.card.title' })}
+            description={this.props.intl.formatMessage({ id: 'landing.card.description' })}
+            Component={
+              <form className="c-form" onSubmit={this.onStagingSubmit} noValidate>
+                <button
+                  className="c-button -tertiary -fullwidth" type="submit"
+                  style={{ margin: '0 0 16px' }}
+                >
+                  {this.props.intl.formatMessage({ id: 'landing.card.link' })}
+                </button>
+
+                <Field
+                  ref={(c) => { if (c) FORM_ELEMENTS_STAGING.elements.staging = c; }}
+                  validations={['required']}
+                  properties={{
+                    name: 'staging',
+                    title: this.props.intl.formatMessage({ id: 'landing.card.checkbox' }),
+                    required: true,
+                    default: ''
+                  }}
+                  onChange={obj => this.setStateFormStaging('staging', obj.checked)}
+                >
+                  {Checkbox}
+                </Field>
+              </form>
+            }
           />
         </StaticSection>
       </Layout>

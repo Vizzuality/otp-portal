@@ -42,6 +42,10 @@
     transform: translate(-50%,0);
   }
 
+  .card-component {
+    padding: $space-1 * 5 0 0;
+  }
+
   // THEMES
   &.-primary {
     background: rgba($color-black, 0.04);

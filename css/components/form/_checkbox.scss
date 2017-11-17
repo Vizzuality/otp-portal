@@ -1,0 +1,118 @@
+$checkbox-size: 20px;
+$checkbox-size-small: 14px;
+
+.c-checkbox {
+  label {
+    display: block;
+    padding: 2px 0 $space-1 * 2;
+    text-transform: none;
+    position: relative;
+    padding-left: $checkbox-size + 5;
+    font-size: $font-size-default;
+    line-height: 1;
+    cursor: pointer;
+    width: auto;
+    top: 0;
+    left: 0;
+    transform: none;
+    text-align: left;
+    color: $color-text-1;
+    margin-left: 0;
+
+    &:hover {
+      color: darken($color-text-1, 12.5%);
+    }
+
+    .checkbox-icon {
+      position: absolute;
+      top: 5px;
+      left: 0;
+      width: $checkbox-size;
+      height: $checkbox-size;
+      border: 1px solid $color-white;
+      border-radius: 4px;
+
+      &:after {
+        content: "";
+        position: absolute;
+        display: block;
+        top: calc(50% - 1px);
+        left: 50%;
+        width: 10px;
+        height: 5px;
+        border-left: 2px solid $color-white;
+        border-bottom: 2px solid $color-white;
+        transform: translate(-50%,-50%) rotate(-40deg) scale(0);
+        transition: all .16s cubic-bezier(0.445, 0.050, 0.550, 0.950);
+      }
+    }
+
+    .item-title {
+      display: inline-block;
+      margin-left: 5px;
+      margin-top: 2px;
+      line-height: 1.35;
+      font-size: $font-size-small;
+    }
+  }
+
+  input[type=checkbox] {
+    display: none;
+  }
+
+  input[type=checkbox]:checked + label {
+    .checkbox-icon {
+      &:after {
+        transform: translate(-50%,-50%) rotate(-40deg) scale(1);
+      }
+    }
+  }
+
+  input[type=checkbox]:disabled + label {
+    opacity: 0.5;
+  }
+
+}
+
+.c-checkbox-box {
+  > * {
+    margin-bottom: 10px;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  &.-inline {
+    display: flex;
+    > * {
+      margin: 0 16px 0 0;
+      &:last-child {
+        margin: 0;
+      }
+    }
+  }
+
+  &.-small {
+    .c-checkbox {
+      label {
+        font-size: $font-size-small;
+
+        .checkbox-icon {
+          width: $checkbox-size-small;
+          height: $checkbox-size-small;
+        }
+
+        .item-title {
+          display: inline-block;
+          margin-left: 5px;
+          margin-top: 2px;
+        }
+      }
+    }
+  }
+
+  .checkbox-box-title {
+    display: inline-block;
+    margin-bottom: 16px;
+    text-transform: capitalize;
+  }
+}
