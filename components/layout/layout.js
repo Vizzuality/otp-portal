@@ -65,7 +65,6 @@ Layout.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   children: PropTypes.any.isRequired,
-  session: PropTypes.object.isRequired,
   url: PropTypes.object.isRequired,
   className: PropTypes.string,
   footer: PropTypes.bool

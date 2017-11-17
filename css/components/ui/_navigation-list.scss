@@ -35,7 +35,8 @@
     margin-right: 45px;
     &:last-child { margin-right: 0; }
 
-    > a {
+    > a,
+    > div {
       position: relative;
       display: flex;
       align-items: center;

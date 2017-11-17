@@ -12,19 +12,24 @@
     "babel-plugin-wrap-in-js": "^1.1.1",
     "body-parser": "^1.15.2",
     "classnames": "^2.2.5",
+    "cookie-parser": "^1.4.3",
+    "cookie-session": "^2.0.0-beta.3",
     "dotenv": "^4.0.0",
     "eventemitter3": "^2.0.3",
     "express": "^4.14.0",
+    "express-locale": "^1.0.5",
     "express-session": "^1.14.2",
     "foundation-sites": "^6.3.1",
     "glob": "7.1.1",
     "isomorphic-fetch": "^2.2.1",
+    "js-cookie": "^2.2.0",
     "json-api-normalizer": "^0.4.0",
     "jsonapi-serializer": "^3.5.3",
     "leaflet": "^1.0.3",
     "lodash": "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz",
     "lusca": "^1.4.1",
     "mapbox-gl": "^0.37.0",
+    "mkdirp": "^0.5.1",
     "moveto": "^1.6.1",
     "next": "^3.0.0-beta6",
     "next-redux-wrapper": "^1.1.2",
@@ -43,9 +48,11 @@
     "raw-loader": "^0.5.1",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
+    "react-intl": "^2.4.0",
     "react-redux": "^4.4.6",
     "react-redux-toastr": "^6.2.7",
     "react-select": "^1.0.0-rc.5",
+    "react-simple-dropdown": "^3.2.0",
     "react-sticky": "^6.0.1",
     "react-table": "^6.2.0",
     "recharts": "^1.0.0-alpha.0",
@@ -69,7 +76,7 @@
     "eslint-plugin-import": "https://registry.npmjs.org/eslint-plugin-import/-/eslint-plugin-import-2.2.0.tgz",
     "eslint-plugin-react": "^6.10.3",
     "extract-text-webpack-plugin": "^2.1.0",
-    "postcss-easy-import": "^2.0.0",
+    "postcss-easy-import": "2.0.0",
     "why-did-you-update": "0.0.8",
     "xo": "^0.17.1"
   },
@@ -78,9 +85,8 @@
     "export": "NODE_ENV=development next build && next export",
     "build": "next build",
     "start": "node index.js",
-    "heroku-postbuild": "next build"
-  },
-  "engines": {
-    "node": "7.x.x"
+    "transifex:push": "node transifex/transifex-push.js",
+    "transifex:pull": "node transifex/transifex-pull.js",
+    "heroku-postbuild": "npm run transifex:pull && next build"
   }
 }

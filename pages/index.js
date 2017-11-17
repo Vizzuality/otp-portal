@@ -1,10 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { toastr } from 'react-redux-toastr'
 
 // Redux
 import withRedux from 'next-redux-wrapper';
 import { store } from 'store';
+
+// Intl
+import withIntl from 'hoc/with-intl';
+import { intlShape } from 'react-intl';
+
+// Toastr
+import { toastr } from 'react-redux-toastr';
 
 // Components
 import Page from 'components/layout/page';
@@ -116,8 +121,12 @@ class HomePage extends Page {
           column={9}
         >
           <div className="c-intro">
-            <h2>Incentivizing <span>legal</span> and <span>sustainable timber</span> through better information-sharing.</h2>
-            <p>Are you interested in providing comments on the OTP beta version? Register your mail address now to be notified of the beta version release and the launch of the consultation period!</p>
+            <h2
+              dangerouslySetInnerHTML={{
+                __html: this.props.intl.formatHTMLMessage({ id: 'home.intro' })
+              }}
+            />
+            <p>Are you interested in receiving updates on the OTP development? Register for our mailing list by adding your email address here.</p>
 
             <form className="c-form" onSubmit={this.onSubmit} noValidate>
               <Field
@@ -159,9 +168,9 @@ class HomePage extends Page {
 }
 
 HomePage.propTypes = {
-  session: PropTypes.object.isRequired
+  intl: intlShape.isRequired
 };
 
-export default withRedux(
+export default withIntl(withRedux(
   store
-)(HomePage);
+)(HomePage));
