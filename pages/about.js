@@ -47,7 +47,7 @@ class AboutPage extends Page {
         searchList={this.props.operators.data}
       >
         <StaticHeader
-          title={this.props.intl.formatMessage({ id: 'about.title' })}
+          title="About the portal"
           background="/static/images/static-header/bg-about.jpg"
         />
 

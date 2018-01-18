@@ -42,13 +42,13 @@ class HelpPage extends Page {
 
     return (
       <Layout
-        title={this.props.intl.formatMessage({ id: 'help.title' })}
+        title="Help"
         description="Help description..."
         url={url}
         searchList={this.props.operators.data}
       >
         <StaticHeader
-          title={this.props.intl.formatMessage({ id: 'help.title' })}
+          title="Help"
           background="/static/images/static-header/bg-help.jpg"
         />
         <Tabs

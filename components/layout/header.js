@@ -79,7 +79,7 @@ class Header extends React.Component {
                       <DropdownTrigger>
                         <div className="header-nav-list-item">
                           <Icon name="icon-user" />
-                          <span>{this.props.intl.formatMessage({ id: 'logged_in.trigger' })}</span>
+                          <span>My account</span>
                         </div>
                       </DropdownTrigger>
 
@@ -90,7 +90,7 @@ class Header extends React.Component {
                               <Link
                                 href="/operators/edit"
                               >
-                                <a>{this.props.intl.formatMessage({ id: 'logged_in.dropdown.profile' })}</a>
+                                <a>Profile</a>
                               </Link>
                             </li>
                           }
@@ -99,13 +99,13 @@ class Header extends React.Component {
                               <Link
                                 href={`/operators/${user.operator}/documentation`}
                               >
-                                <a>{this.props.intl.formatMessage({ id: 'logged_in.dropdown.documents' })}</a>
+                                <a>My documents</a>
                               </Link>
                             </li>
                           }
                           {user.role === 'admin' &&
                             <li className="account-dropdown-list-item">
-                              <a href="/admin" >{this.props.intl.formatMessage({ id: 'logged_in.dropdown.admin' })}</a>
+                              <a href="/admin" >Admin </a>
                             </li>
                           }
                           <li className="account-dropdown-list-item">

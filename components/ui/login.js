@@ -132,7 +132,7 @@ class Login extends React.Component {
               className="-fluid"
               properties={{
                 name: 'email',
-                label: this.props.intl.formatMessage({ id: 'login.form.field.email' }),
+                label: 'Email',
                 type: 'email',
                 required: true,
                 default: this.state.form.email
@@ -149,7 +149,7 @@ class Login extends React.Component {
               className="-fluid"
               properties={{
                 name: 'password',
-                label: this.props.intl.formatMessage({ id: 'login.form.field.password' }),
+                label: 'Password',
                 type: 'password',
                 required: true,
                 default: this.state.form.password

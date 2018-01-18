@@ -165,7 +165,7 @@ class NewOperator extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'name',
-                  label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.name' }),
+                  label: 'Operator\'s name',
                   required: true,
                   default: this.state.form.name
                 }}
@@ -180,7 +180,7 @@ class NewOperator extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'details',
-                  label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.details' }),
+                  label: 'Operator\'s description',
                   default: this.state.form.details,
                   rows: '6'
                 }}
@@ -197,7 +197,7 @@ class NewOperator extends React.Component {
                 options={HELPERS_REGISTER.getOperatorTypes()}
                 properties={{
                   name: 'operator_type',
-                  label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.operator_type' }),
+                  label: 'Operator\'s type',
                   required: true,
                   instanceId: 'select.operator_type',
                   default: this.state.form.operator_type
@@ -214,7 +214,7 @@ class NewOperator extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'website',
-                  label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.website' }),
+                  label: 'Website',
                   default: this.state.form.website
                 }}
               >
@@ -228,7 +228,7 @@ class NewOperator extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'address',
-                  label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.address' }),
+                  label: 'Address',
                   default: this.state.form.address
                 }}
               >
@@ -242,7 +242,7 @@ class NewOperator extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'logo',
-                  label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.logo' }),
+                  label: 'Logo',
                   default: this.state.form.logo
                 }}
               >
@@ -272,7 +272,7 @@ class NewOperator extends React.Component {
                   loadOptions={HELPERS_REGISTER.getCountries}
                   properties={{
                     name: 'country',
-                    label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.country' }),
+                    label: 'Country',
                     required: true,
                     instanceId: 'select.country',
                     default: this.state.form.country

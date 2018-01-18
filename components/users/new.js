@@ -138,7 +138,7 @@ class UserNewForm extends React.Component {
                 options={HELPERS_REGISTER.getOperators(this.props.operators.data)}
                 properties={{
                   name: 'operator_id',
-                  label: this.props.intl.formatMessage({ id: 'signup.user.form.field.producer' }),
+                  label: 'Producer',
                   required: true,
                   instanceId: 'select.operator_id',
                   default: this.state.form.operator_id
@@ -155,7 +155,7 @@ class UserNewForm extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'name',
-                  label: this.props.intl.formatMessage({ id: 'signup.user.form.field.name' }),
+                  label: 'Name',
                   required: true,
                   default: this.state.form.name
                 }}
@@ -171,7 +171,7 @@ class UserNewForm extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'nickname',
-                  label: this.props.intl.formatMessage({ id: 'signup.user.form.field.nickname' }),
+                  label: 'Nickname',
                   required: true,
                   default: this.state.form.nickname
                 }}
@@ -187,7 +187,7 @@ class UserNewForm extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'email',
-                  label: this.props.intl.formatMessage({ id: 'signup.user.form.field.email' }),
+                  label: 'Email',
                   required: true,
                   default: this.state.form.email
                 }}
@@ -203,7 +203,7 @@ class UserNewForm extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'password',
-                  label: this.props.intl.formatMessage({ id: 'signup.user.form.field.password' }),
+                  label: 'Password',
                   type: 'password',
                   required: true,
                   default: this.state.form.password
@@ -226,7 +226,7 @@ class UserNewForm extends React.Component {
                 className="-fluid"
                 properties={{
                   name: 'password_confirmation',
-                  label: this.props.intl.formatMessage({ id: 'signup.user.form.field.password_confirmation' }),
+                  label: 'Password confirmation',
                   type: 'password',
                   required: true,
                   default: this.state.form.password_confirmation
