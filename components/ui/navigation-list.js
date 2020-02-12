@@ -51,13 +51,13 @@ class NavigationList extends React.Component {
             </Dropdown>
           </li>
         }
-        <li>
+        {/* <li>
           <Link href="/countries">
             <a className={!hideActive ? this.setActive(['/countries', '/countries-detail']) : ''}>
               {this.props.intl.formatMessage({ id: 'countries' })}
             </a>
           </Link>
-        </li>
+        </li> */}
         <li>
           <Link href="/operators">
             <a className={!hideActive ? this.setActive(['/operators', '/operators-detail']) : ''}>
