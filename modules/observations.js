@@ -30,7 +30,7 @@ const initialState = {
   filters: {
     data: {
       observation_type: [],
-      country_id: [7, 47, 45, 188, 53],
+      country_id: [188, 53],
       fmu_id: [],
       years: [],
       observer_id: [],

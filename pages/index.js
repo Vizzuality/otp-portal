@@ -210,7 +210,7 @@ class HomePage extends React.Component {
                           type: "geojson",
                           source: {
                             type: "geojson",
-                            data: `${process.env.OTP_API}/fmus?country_ids=7,47,45,188,53&format=geojson`
+                            data: `${process.env.OTP_API}/fmus?country_ids=188,53&format=geojson`
                           },
                           render: {
                             layers: [

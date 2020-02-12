@@ -197,7 +197,7 @@ export const LAYERS = [
       type: 'geojson',
       source: {
         type: 'geojson',
-        data: `${process.env.OTP_API}/fmus?country_ids=7,47,45,188,53&operator_ids={operator_id}&format=geojson`
+        data: `${process.env.OTP_API}/fmus?country_ids=188,53&operator_ids={operator_id}&format=geojson`
       },
       render: {
         layers: [
@@ -263,19 +263,6 @@ export const LAYERS = [
       type: 'basic',
       color: '#e98300',
       items: [
-        {
-          name: 'FMUs',
-          color: '#e98300'
-        },
-        {
-          name: 'Cameroon',
-          hideIcon: true,
-          items: [
-            { name: 'ventes_de_coupe', color: '#e92000' },
-            { name: 'ufa', color: '#e95800' },
-            { name: 'communal', color: '#e9A700' }
-          ]
-        },
         {
           name: 'Central African Republic',
           hideIcon: true,

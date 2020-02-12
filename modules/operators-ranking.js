@@ -57,9 +57,6 @@ const initialState = {
     // TODO: get them from API
     options: {
       country: [
-        { label: 'Congo', value: 47, iso: 'COG' },
-        { label: 'Democratic Republic of the Congo', value: 7, iso: 'COD' },
-        { label: 'Cameroon', value: 45, iso: 'CMR' },
         { label: 'Central African Republic', value: 188, iso: 'CAF' },
         { label: 'Gabon', value: 53, iso: 'GAB' }
       ],
@@ -160,6 +157,11 @@ export default function (state = initialState, action) {
 /* Helpers */
 const getSQLFilters = (filters) => {
   const sql = compact(Object.keys(filters).map((f) => {
+    // THIS IS SATAN!!!!
+    if (f === 'country' && !filters[f].length) {
+      return `filter[${f}]=[188,53]}`;
+    }
+
     if ((Array.isArray(filters[f]) && filters[f].length)) {
       return `filter[${f}]=${filters[f]}`;
     }
