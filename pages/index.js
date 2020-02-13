@@ -96,6 +96,7 @@ class HomePage extends React.Component {
                 __html: this.props.intl.formatHTMLMessage({ id: "home.intro" })
               }}
             />
+            <h3>Temporary page for initial data upload</h3>
           </div>
         </StaticSection>
 
