@@ -74,7 +74,6 @@ const initialState = {
       operator: ''
     },
 
-    // TODO: get them from API
     options: {
       country: process.env.OTP_COUNTRIES.map(iso =>
         COUNTRIES.find(c => c.iso === iso)
@@ -216,7 +215,7 @@ export function getOperatorsRanking() {
     const fields = Object.keys(currentFields).map(f => `fields[${f}]=${currentFields[f]}`).join('&');
 
     // Filters
-    const filters = '&filter[fa]=true';
+    const filters = `&filter[fa]=true&filter[country]=${process.env.OTP_COUNTRIES_IDS.join(',')}`;
 
     const lang = language === 'zh' ? 'zh-CN' : language;
 
