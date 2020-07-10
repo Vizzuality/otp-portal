@@ -23,11 +23,8 @@ import { getParsedDocumentation } from 'selectors/operators-detail/documentation
 
 // Redux
 import { connect } from 'react-redux';
-import { setUser } from 'modules/user';
-import { setRouter } from 'modules/router';
-import { setLanguage } from 'modules/language';
-import { getOperators } from 'modules/operators';
 import { getOperator } from 'modules/operators-detail';
+import { getGladMaxDate } from 'modules/operators-detail-fmus';
 import withTracker from 'components/layout/with-tracker';
 
 import Link from 'next/link';
@@ -45,32 +42,52 @@ import OperatorsDetailObservations from 'components/operators-detail/observation
 import OperatorsDetailFMUs from 'components/operators-detail/fmus';
 
 class OperatorsDetail extends React.Component {
-  static async getInitialProps({ req, asPath, pathname, query, store, isServer }) {
-    const { operators } = store.getState();
-    const url = { asPath, pathname, query };
-    let user = null;
-    let lang = 'en';
+  static async getInitialProps({ url, store }) {
+    const { operatorsDetail, operatorsDetailFmus } = store.getState();
 
-    if (isServer) {
-      lang = req.locale.language;
-      user = req.session ? req.session.user : {};
-    } else {
-      lang = store.getState().language;
-      user = store.getState().user;
+    if (!operatorsDetailFmus.layersSettings.glad) {
+      await store.dispatch(getGladMaxDate());
     }
 
-    store.dispatch(setLanguage(lang));
-    store.dispatch(setUser(user));
-    store.dispatch(setRouter(url));
-
-    if (!operators.data.length) {
-      await store.dispatch(getOperators());
+    if (operatorsDetail.data.id !== url.query.id) {
+      await store.dispatch(getOperator(url.query.id));
     }
 
-    await store.dispatch(getOperator(url.query.id));
-
-    return { isServer, url };
+    return { url };
   }
+
+
+  /**
+   * COMPONENT LIFECYCLE
+  */
+  componentDidMount() {
+    // Set discalimer
+    // if (!Cookies.get('operator-detail.disclaimer')) {
+    //   toastr.info(
+    //     'Info',
+    //     this.props.intl.formatMessage({ id: 'operator-detail.disclaimer' }),
+    //     {
+    //       className: '-disclaimer',
+    //       position: 'bottom-right',
+    //       timeOut: 15000,
+    //       onCloseButtonClick: () => {
+    //         Cookies.set('operator-detail.disclaimer', true);
+    //       }
+    //     }
+    //   );
+    // }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { url } = this.props;
+    const { url: nextUrl } = nextProps;
+
+    if (url.query.tab !== nextUrl.query.tab) {
+      const { tab } = nextUrl.query || 'overview';
+      logEvent('Producers', 'Change tab', tab);
+    }
+  }
+
   /**
    * HELPERS
    * - getTabOptions
@@ -99,42 +116,6 @@ class OperatorsDetail extends React.Component {
       };
     });
   }
-
-  /**
-   * COMPONENT LIFECYCLE
-  */
-  componentDidMount() {
-    // Set discalimer
-    if (!Cookies.get('operator-detail.disclaimer')) {
-      toastr.info(
-        'Info',
-        this.props.intl.formatMessage({ id: 'operator-detail.disclaimer' }),
-        {
-          className: '-disclaimer',
-          position: 'bottom-right',
-          timeOut: 15000,
-          onCloseButtonClick: () => {
-            Cookies.set('operator-detail.disclaimer', true);
-          }
-        }
-      );
-    }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const { url } = this.props;
-    const { url: nextUrl } = nextProps;
-
-    if (url.query.id !== nextUrl.query.id) {
-      this.props.getOperator(nextUrl.query.id);
-    }
-
-    if (url.query.tab !== nextUrl.query.tab) {
-      const { tab } = nextUrl.query || 'overview';
-      logEvent('Producers', 'Change tab', tab);
-    }
-  }
-
 
   render() {
     const { url, user, operatorsDetail, operatorObservations, operatorDocumentation } = this.props;
@@ -218,6 +199,10 @@ class OperatorsDetail extends React.Component {
 
 OperatorsDetail.propTypes = {
   url: PropTypes.object.isRequired,
+  operatorsDetail: PropTypes.shape({}),
+  operatorObservations: PropTypes.array,
+  operatorDocumentation: PropTypes.array,
+  user: PropTypes.shape({}),
   intl: intlShape.isRequired
 };
 

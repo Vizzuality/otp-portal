@@ -61,6 +61,8 @@ class NewOperator extends React.Component {
         fmus: []
       },
       certifications: {},
+      countryOptions: [],
+      countryLoading: true,
       fmusOptions: [],
       fmusLoading: true,
       submitting: false,
@@ -70,6 +72,10 @@ class NewOperator extends React.Component {
     // Bindings
     this.onChange = this.onChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
+  }
+
+  componentDidMount() {
+    this.getCountries();
   }
 
   /**
@@ -114,23 +120,35 @@ class NewOperator extends React.Component {
 
             try {
               errors.forEach(er =>
-                toastr.error('Error', `${er.title} - ${er.detail}`)
+                toastr.error(this.props.intl.formatMessage({ id: 'Error' }), `${er.title} - ${er.detail}`)
               );
             } catch (e) {
-              toastr.error('Error', 'Oops! There was an error, try again');
+              toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Oops! There was an error, try again' }));
             }
           });
       } else {
-        toastr.error('Error', 'Fill all the required fields');
+        toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Fill all the required fields' }));
       }
     }, 0);
   }
 
   /**
    * HELPERS
+   * - getCountries
    * - getFmus
    *
   */
+  async getCountries() {
+    const { language } = this.props;
+    this.setState({ countryLoading: true });
+    const countries = await HELPERS_REGISTER.getCountries(language);
+
+    this.setState({
+      countryOptions: countries.options,
+      countryLoading: false
+    });
+  }
+
   async getFmus(countryId) {
     this.setState({ fmusLoading: true });
     const fmus = await HELPERS_REGISTER.getOperatorFmus(countryId);
@@ -194,13 +212,17 @@ class NewOperator extends React.Component {
                 onChange={value => this.onChange({ operator_type: value })}
                 validations={['required']}
                 className="-fluid"
-                options={HELPERS_REGISTER.getOperatorTypes()}
+                options={HELPERS_REGISTER.getOperatorTypes().map(t => ({
+                  ...t,
+                  label: this.props.intl.formatMessage({ id: t.label })
+                }))}
                 properties={{
                   name: 'operator_type',
                   label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.operator_type' }),
                   required: true,
                   instanceId: 'select.operator_type',
-                  default: this.state.form.operator_type
+                  default: this.state.form.operator_type,
+                  placeholder: ''
                 }}
               >
                 {Select}
@@ -269,13 +291,14 @@ class NewOperator extends React.Component {
                   }}
                   validations={['required']}
                   className="-fluid"
-                  loadOptions={HELPERS_REGISTER.getCountries}
+                  options={this.state.countryOptions}
                   properties={{
                     name: 'country',
                     label: this.props.intl.formatMessage({ id: 'signup.operators.form.field.country' }),
                     required: true,
                     instanceId: 'select.country',
-                    default: this.state.form.country
+                    default: this.state.form.country,
+                    placeholder: ''
                   }}
                 >
                   {Select}
@@ -365,6 +388,8 @@ NewOperator.propTypes = {
 
 
 export default injectIntl(connect(
-  null,
+  state => ({
+    language: state.language
+  }),
   { saveOperator }
 )(NewOperator));

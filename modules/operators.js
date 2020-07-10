@@ -48,7 +48,7 @@ export function getOperators() {
     const lang = language === 'zh' ? 'zh-CN' : language;
 
     return fetch(
-      `${process.env.OTP_API}/operators?locale=${lang}&page[size]=2000&filter[country]=188,53&filter[fa]=true`,
+      `${process.env.OTP_API}/operators?locale=${lang}&page[size]=2000&filter[country]=${process.env.OTP_COUNTRIES_IDS.join(',')}&filter[fa]=true`,
       {
         method: 'GET',
         headers: {

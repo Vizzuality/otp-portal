@@ -68,6 +68,10 @@ app.prepare()
       return app.render(req, res, '/countries-detail', Object.assign(req.params, query));
     });
 
+    server.get('/countries/:id/:tab', (req, res) => {
+      const { query } = parse(req.url, true);
+      return app.render(req, res, '/countries-detail', Object.assign(req.params, query));
+    });
 
     // OPERATORS
     server.get('/operators', (req, res) => {
@@ -106,6 +110,9 @@ app.prepare()
     // SIGNUP
     server.get('/signup', (req, res) => app.render(req, res, '/signup', Object.assign(req.params, req.query)));
 
+    // NEWSLETTER
+    server.get('/newsletter', (req, res) => app.render(req, res, '/newsletter', Object.assign(req.params, req.query)));
+
     // LOGIN
     server.post('/login', (req, res) => {
       request({
@@ -131,6 +138,21 @@ app.prepare()
       req.session = null;
       res.json({});
     });
+
+    server.use('/static', express.static(`${__dirname}/static`, {
+      maxAge: '365d'
+    }));
+
+    server.get(
+      /^\/_next\/static\/(fonts|images)\//,
+      (_, res, nextHandler) => {
+        res.setHeader(
+          'Cache-Control',
+          'public, max-age=31536000, immutable',
+        );
+        nextHandler();
+      },
+    );
 
     // Default catch-all handler to allow Next.js to handle all other routes
     server.all('*', (req, res) => handle(req, res));

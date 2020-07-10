@@ -2,7 +2,6 @@ import Jsona from 'jsona';
 import fetch from 'isomorphic-fetch';
 import * as queryString from 'query-string';
 
-import * as Cookies from 'js-cookie';
 import { get, post } from 'utils/request';
 
 // CONSTANTS
@@ -16,7 +15,7 @@ const GET_USER_OPERATOR_LOADING = 'GET_USER_OPERATOR_LOADING';
 const JSONA = new Jsona();
 
 // REDUCER
-const initialState = (Cookies.get('user')) ? JSON.parse(Cookies.get('user')) : {};
+const initialState = {};
 
 export default function (state = initialState, action) {
   switch (action.type) {
@@ -79,7 +78,7 @@ export function getUserOperator(id) {
     const fields = Object.keys(currentFields).map(f => `fields[${f}]=${currentFields[f]}`).join('&');
 
 
-    fetch(`${process.env.OTP_API}/operators/${id}?${queryParams}&${fields}`, {
+    return fetch(`${process.env.OTP_API}/operators/${id}?${queryParams}&${fields}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -123,14 +122,6 @@ export function login({ body }) {
         value: process.env.OTP_API_KEY
       }],
       onSuccess: (response) => {
-        // Set cookie
-        Cookies.set('user', JSON.stringify(response));
-
-        // Dispatch action
-        dispatch({ type: SET_USER, payload: response });
-
-        resolve(response);
-
         window.location.reload();
       },
       onError: (error) => {
@@ -152,11 +143,6 @@ export function logout() {
         value: process.env.OTP_API_KEY
       }],
       onSuccess: (response) => {
-        // Dispatch action
-        dispatch({ type: REMOVE_USER });
-
-        resolve(response);
-
         window.location.reload();
       },
       onError: (error) => {
@@ -250,6 +236,29 @@ export function updateFmu({ id, body, authorization }) {
       }, {
         key: 'Authorization',
         value: `Bearer ${authorization}`
+      }, {
+        key: 'OTP-API-KEY',
+        value: process.env.OTP_API_KEY
+      }],
+      onSuccess: (response) => {
+        resolve(response);
+      },
+      onError: (error) => {
+        reject(error);
+      }
+    });
+  });
+}
+
+export function saveNewsLetter({ body }) {
+  return () => new Promise((resolve, reject) => {
+    post({
+      url: `${process.env.OTP_API}/contacts`,
+      type: 'POST',
+      body,
+      headers: [{
+        key: 'Content-Type',
+        value: 'application/json'
       }, {
         key: 'OTP-API-KEY',
         value: process.env.OTP_API_KEY

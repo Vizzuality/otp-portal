@@ -108,11 +108,16 @@ class File extends FormElement {
    * @return {String}
   */
   getFileName() {
+    const { properties } = this.props;
     const { accepted } = this.state;
 
     if (accepted.length) {
       const current = accepted[0];
       return current.name;
+    }
+
+    if (properties.defaultFile) {
+      return properties.defaultFile;
     }
 
     return this.props.intl.formatMessage({ id: 'select-file' });

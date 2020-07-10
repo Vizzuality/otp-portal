@@ -1,15 +1,18 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
+import { injectIntl, intlShape } from 'react-intl';
+
 import Spinner from 'components/ui/spinner';
 
 class LegendAnalysisLoss extends PureComponent {
   static propTypes = {
-    analysis: PropTypes.shape({}).isRequired
+    analysis: PropTypes.shape({}).isRequired,
+    intl: intlShape
   }
 
   render() {
-    const { analysis } = this.props;
+    const { analysis, intl } = this.props;
     const { data, loading, error } = analysis;
 
     return (
@@ -21,11 +24,11 @@ class LegendAnalysisLoss extends PureComponent {
         }
 
         {!loading && data &&
-          `There were ${data.loss.toLocaleString()} ha of tree cover loss`
+          intl.formatMessage({ id: 'analysis.loss' }, { alerts: data.loss.toLocaleString() })
         }
       </div>
     );
   }
 }
 
-export default LegendAnalysisLoss;
+export default injectIntl(LegendAnalysisLoss);

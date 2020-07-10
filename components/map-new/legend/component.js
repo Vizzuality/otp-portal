@@ -5,6 +5,8 @@ import classnames from 'classnames';
 
 import debounce from 'lodash/debounce';
 
+import { injectIntl, intlShape } from 'react-intl';
+
 import {
   Legend,
   LegendListItem,
@@ -26,6 +28,7 @@ class LegendComponent extends PureComponent {
     sortable: PropTypes.bool,
     collapsable: PropTypes.bool,
     expanded: PropTypes.bool,
+    intl: intlShape.isRequired,
 
     setLayerSettings: PropTypes.func.isRequired,
     setLayerOrder: PropTypes.func
@@ -89,7 +92,7 @@ class LegendComponent extends PureComponent {
 
 
   render() {
-    const { className, sortable, collapsable, expanded, layerGroups, setLayerSettings } = this.props;
+    const { intl, className, sortable, collapsable, expanded, layerGroups, setLayerSettings } = this.props;
 
     return (
       <div
@@ -99,6 +102,7 @@ class LegendComponent extends PureComponent {
         })}
       >
         <Legend
+          title={intl.formatMessage({ id: 'legend' })}
           sortable={sortable}
           collapsable={collapsable}
           expanded={expanded}
@@ -164,4 +168,4 @@ class LegendComponent extends PureComponent {
   }
 }
 
-export default LegendComponent;
+export default injectIntl(LegendComponent);

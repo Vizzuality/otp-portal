@@ -11,6 +11,8 @@ import { HELPERS_OBS } from 'utils/observations';
 // components
 import Table from 'components/ui/table';
 import Icon from 'components/ui/icon';
+import Tooltip from 'rc-tooltip/dist/rc-tooltip';
+
 
 const MAX_ROWS_TABLE_ILLEGALITIES = 10;
 
@@ -131,7 +133,6 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
                                 <Icon name="icon-cross" className="-big" />
                               </button>
                               <h2 className="c-title obi-illegality-info-title">{illegality}</h2>
-
                               {groupedByIllegality[illegality].length > 0 &&
                                 <Table
                                   sortable
@@ -163,12 +164,42 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
                                         Cell: attr => <span className={`severity-item -sev-${attr.value}`}>{attr.value}</span>
                                       },
                                       {
+                                        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'status' })}</span>,
+                                        accessor: 'status',
+                                        headerClassName: '-a-left',
+                                        className: '-a-left status description',
+                                        minWidth: 150,
+                                        Cell: attr => (
+                                          <span>
+                                            {this.props.intl.formatMessage({ id: `observations.status-${attr.value}` })}
+
+                                            {[7, 8, 9].includes(attr.value) &&
+                                              <Tooltip
+                                                placement="bottom"
+                                                overlay={(
+                                                  <div style={{ maxWidth: 200 }}>
+                                                    {this.props.intl.formatMessage({ id: `observations.status-${attr.value}.info` })}
+                                                  </div>
+                                                )}
+                                                overlayClassName="c-tooltip no-pointer-events"
+                                              >
+                                                <button
+                                                  className="c-button -icon -tertiary"
+                                                >
+                                                  <Icon name="icon-info" className="-smaller" />
+                                                </button>
+                                              </Tooltip>
+                                            }
+                                          </span>
+                                        )
+                                                                      },
+                                      {
                                         Header: <span>{this.props.intl.formatMessage({ id: 'description' })}</span>,
                                         accessor: 'details',
                                         headerClassName: '-a-left',
                                         className: 'description',
                                         sortable: false,
-                                        minWidth: 420,
+                                        minWidth: 320,
                                         Cell: attr => <p>{attr.value}</p>
                                       },
                                       {
@@ -196,33 +227,32 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
                                         }
                                       },
                                       {
-                                        Header: <span>{this.props.intl.formatMessage({ id: 'evidence' })}</span>,
-                                        accessor: 'documents',
-                                        sortable: false,
+                                        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'evidence' })}</span>,
+                                        accessor: 'evidence',
                                         headerClassName: '-a-left',
-                                        minWidth: 150,
-                                        Cell: (attr) => {
-                                          const documents = attr.value;
-
-                                          if (!documents.length) return null;
-
-                                          return documents.map((d) => {
-                                            if (d.attachment && d.attachment.url) {
-                                              return (
+                                        className: 'evidence description',
+                                        minWidth: 250,
+                                        Cell: attr => (
+                                          <div className="evidence-item-wrapper">
+                                            {Array.isArray(attr.value) &&
+                                              attr.value.map(v => (
                                                 <a
-                                                  className="document-link"
-                                                  href={d.attachment.url || '#'}
+                                                  href={v.attachment.url}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
-                                                  title={d.name}
+                                                  className="evidence-item"
                                                 >
-                                                  {this.props.intl.formatMessage({ id: 'evidence' }).charAt(0)}
+                                                  <Icon className="" name="icon-file-empty" />
                                                 </a>
-                                              );
+                                              ))
                                             }
-                                            return null;
-                                          });
-                                        }
+
+                                            {!Array.isArray(attr.value) &&
+                                              <span className="evidence-item-text">{attr.value}</span>
+                                            }
+
+                                          </div>
+                                        )
                                       }
                                     ],
                                     nextPageSize: pageSize,

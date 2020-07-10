@@ -107,14 +107,14 @@ class UserNewForm extends React.Component {
 
             try {
               errors.forEach(er =>
-                toastr.error('Error', `${er.title} - ${er.detail}`)
+                toastr.error(this.props.intl.formatMessage({ id: 'Error' }), `${er.title} - ${er.detail}`)
               );
             } catch (e) {
-              toastr.error('Error', 'Oops! There was an error, try again');
+              toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Oops! There was an error, try again' }));
             }
           });
       } else {
-        toastr.error('Error', 'Fill all the required fields');
+        toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Fill all the required fields' }));
       }
     }, 0);
   }
@@ -139,8 +139,9 @@ class UserNewForm extends React.Component {
                 validations={['required']}
                 className="-fluid"
                 options={[
-                  { label: 'Producer', value: 'operator' },
-                  { label: 'Government', value: 'government' }
+
+                  { label: this.props.intl.formatMessage({ id: 'operator' }), value: 'operator' },
+                  { label: this.props.intl.formatMessage({ id: 'government' }), value: 'government' }
                 ]}
                 hint={this.props.intl.formatMessage({ id: 'signup.user.form.field.permissions_request.hint' })}
                 properties={{
@@ -167,7 +168,8 @@ class UserNewForm extends React.Component {
                     label: this.props.intl.formatMessage({ id: 'signup.user.form.field.country' }),
                     required: true,
                     instanceId: 'select.country_id',
-                    default: this.state.form.country_id
+                    default: this.state.form.country_id,
+                    placeholder: this.props.intl.formatMessage({ id: 'select.placeholder' })
                   }}
                 >
                   {Select}
@@ -188,7 +190,8 @@ class UserNewForm extends React.Component {
                     label: this.props.intl.formatMessage({ id: 'signup.user.form.field.producer' }),
                     required: true,
                     instanceId: 'select.operator_id',
-                    default: this.state.form.operator_id
+                    default: this.state.form.operator_id,
+                    placeholder: this.props.intl.formatMessage({ id: 'select.placeholder' })
                   }}
                 >
                   {Select}
@@ -291,7 +294,7 @@ class UserNewForm extends React.Component {
                 properties={{
                   required: true,
                   name: 'agree',
-                  label: 'by creating your account, you agree to the terms of service', // this.props.intl.formatMessage({ id: 'sawmills.modal.active' }),
+                  label: this.props.intl.formatMessage({ id: 'signup.user.form.field.agree' }), // this.props.intl.formatMessage({ id: 'sawmills.modal.active' }),
                   checked: this.state.form.agree
                 }}
               >

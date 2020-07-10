@@ -12,6 +12,7 @@
 
   // Logo
   .header-logo {
+    position: relative;
     display: block;
     margin: 0;
     padding: 0;
@@ -26,6 +27,16 @@
       width: 100%;
       height: 100%;
       text-indent: -9999px;
+    }
+
+    .header-logo-staging {
+      position: absolute;
+      left: 44px;
+      bottom: -12px;
+      font-size: 10px;
+      font-family: $font-family-proximanova;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   }
 
@@ -113,6 +124,18 @@
       width: 220px;
       height: 56px;
       background-image: url('/static/images/otp-logo-white.svg');
+
+      .header-logo-staging {
+        position: absolute;
+        left: 75px;
+        bottom: -15px;
+        font-size: 10px;
+        font-family: $font-family-proximanova;
+        color: #EEE;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
     }
 
     .header-nav-list,

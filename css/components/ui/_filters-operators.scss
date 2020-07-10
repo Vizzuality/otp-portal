@@ -41,5 +41,45 @@
       line-height: 26px;
       font-weight: normal;
     }
+
+    .search {
+      width: 100%;
+      position: relative;
+    }
+
+    .search-remove {
+      appearance: none;
+      background: none;
+      box-shadow: none;
+      border: none;
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate(0, -50%);
+      cursor: pointer;
+      fill: $color-white;
+      outline: none;
+    }
+
+    .search-input {
+      appearance: none;
+      background: none;
+      border: none;
+      font-family: $font-family-proximanova;
+      line-height: 32px;
+      font-weight: 700;
+      font-size: $font-size-extrasmall;
+      width: 100%;
+      outline: 0;
+      color: #FFF;
+      text-transform: uppercase;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        line-height: 32px;
+      }
+    }
   }
 }

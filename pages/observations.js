@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import difference from 'lodash/difference';
-import capitalize from 'lodash/capitalize';
+import debounce from 'lodash/debounce';
 
 // Redux
 import { connect } from 'react-redux';
-import { setUser } from 'modules/user';
-import { setRouter } from 'modules/router';
-import { setLanguage } from 'modules/language';
-import { getOperators } from 'modules/operators';
 
 import withTracker from 'components/layout/with-tracker';
+
+// Services
+import modal from 'services/modal';
 
 // Intl
 import withIntl from 'hoc/with-intl';
@@ -21,8 +20,11 @@ import { intlShape } from 'react-intl';
 // Selectors
 import { getParsedChartObservations } from 'selectors/observations/parsed-chart-observations';
 import { getParsedTableObservations } from 'selectors/observations/parsed-table-observations';
+import { getObservationsLayers } from 'selectors/observations/parsed-map-observations';
+import { getParsedFilters } from 'selectors/observations/parsed-filters';
 
 // Components
+import Tooltip from 'rc-tooltip/dist/rc-tooltip';
 import Layout from 'components/layout/layout';
 import Overview from 'components/observations/overview';
 import CheckboxGroup from 'components/form/CheckboxGroup';
@@ -33,82 +35,76 @@ import Spinner from 'components/ui/spinner';
 import ReadMore from 'components/ui/read-more';
 import Icon from 'components/ui/icon';
 import MapSubComponent from 'components/ui/map-sub-component';
+import StaticTabs from 'components/ui/static-tabs';
 
-// Utils
+
+import Map from 'components/map-new';
+import LayerManager from 'components/map-new/layer-manager';
+import Legend from 'components/map-new/legend';
+import MapControls from 'components/map/map-controls';
+import ZoomControl from 'components/map/controls/zoom-control';
+import FAAttributions from 'components/map-new/fa-attributions';
+
+// Modules
 import {
   getObservations,
   getFilters,
   setFilters,
   setObservationsUrl,
   getObservationsUrl,
-  setActiveColumns
+  setActiveColumns,
+  setObservationsMapLocation,
+  setObservationsMapCluster
 } from 'modules/observations';
+
 import { logEvent } from 'utils/analytics';
 
 // Constants
 import { FILTERS_REFS } from 'constants/observations';
-
+import { LEGEND_SEVERITY } from 'constants/rechart';
 
 class ObservationsPage extends React.Component {
+  static async getInitialProps({ url, store }) {
+    const { observations } = store.getState();
+
+    if (isEmpty(observations.data)) {
+      await store.dispatch(getObservations());
+    }
+
+    if (isEmpty(observations.filters.options)) {
+      await store.dispatch(getFilters());
+    }
+
+    return { url };
+  }
+
   constructor(props) {
     super(props);
 
     this.state = {
-      tab: 'observations-list',
+      tab: this.props.url.query.subtab || 'observations-list',
       page: 1
     };
 
     this.triggerChangeTab = this.triggerChangeTab.bind(this);
   }
 
-  static async getInitialProps({ req, asPath, pathname, query, store, isServer }) {
-    const { operators } = store.getState();
-    const url = { asPath, pathname, query };
-    let user = null;
-    let lang = 'en';
-
-    if (isServer) {
-      lang = req.locale.language;
-      user = req.session ? req.session.user : {};
-    } else {
-      lang = store.getState().language;
-      user = store.getState().user;
-    }
-
-    store.dispatch(setLanguage(lang));
-    store.dispatch(setUser(user));
-
-    store.dispatch(setRouter(url));
-
-    if (!operators.data.length) {
-      await store.dispatch(getOperators());
-    }
-
-    return { isServer, url };
-  }
-
   componentDidMount() {
-    const { observations, url } = this.props;
+    const { url } = this.props;
 
     this.props.getObservationsUrl(url);
-
-    if (isEmpty(observations.data)) {
-      this.props.getObservations();
-    }
-
-    if (isEmpty(observations.filters.options)) {
-      this.props.getFilters();
-    }
-  }
-
-  triggerChangeTab(tab) {
-    this.setState({ tab });
   }
 
   componentWillReceiveProps(nextProps) {
-    if (!isEqual(this.props.observations.filters.data, nextProps.observations.filters.data)) {
+    if (!isEqual(this.props.parsedFilters.data, nextProps.parsedFilters.data)) {
       this.props.getObservations();
     }
+  }
+
+  onPageChange(page) {
+    this.setState({ page: page + 1 }, () => {
+      this.props.getObservations(page + 1);
+    });
   }
 
   getPageSize() {
@@ -122,14 +118,11 @@ class ObservationsPage extends React.Component {
     return 1;
   }
 
-  onPageChange(page) {
-    this.setState({ page: page + 1 }, () => {
-      this.props.getObservations(page + 1);
+  onCustomAttribute = (e) => {
+    e.preventDefault();
+    modal.toggleModal(true, {
+      children: FAAttributions
     });
-  }
-
-  logFilter = (action, label) => {
-    logEvent('Observations', action, label);
   }
 
   setActiveColumns(value) {
@@ -143,42 +136,93 @@ class ObservationsPage extends React.Component {
     this.props.setActiveColumns(value);
   }
 
+  triggerChangeTab(tab) {
+    this.setState({ tab });
+  }
+
+  setMapLocation = debounce((mapLocation) => {
+    this.props.setObservationsMapLocation(mapLocation);
+  }, 500);
+
+  onViewportChange = (mapLocation) => {
+    this.props.setObservationsMapCluster({});
+    this.setMapLocation(mapLocation);
+  }
+
+  onClick = (e) => {
+    const { cluster: clusterProp } = this.props.observations;
+
+    const { features } = e;
+    if (features && features.length) {
+      const { source, geometry, properties } = features[0];
+      const { cluster, cluster_id: clusterId, point_count } = properties;
+
+      if (cluster && +clusterId !== +clusterProp.id) {
+        const layers = this.map.getStyle().layers.filter(l => l.source === source);
+
+        this.map
+          .getSource(source)
+          .getClusterLeaves(
+            clusterId,
+            point_count,
+            0,
+            (error, fts) => {
+              if (error) {
+                this.props.setObservationsMapCluster({});
+                return true;
+              }
+
+              this.props.setObservationsMapCluster({
+                id: clusterId,
+                coordinates: geometry.coordinates,
+                features: fts,
+                layers
+              });
+              return fts;
+            }
+          );
+      } else {
+        this.props.setObservationsMapCluster({});
+      }
+    } else {
+      this.props.setObservationsMapCluster({});
+    }
+  }
+
   render() {
-    const { url, observations, parsedChartObservations, parsedTableObservations } = this.props;
+    const { url, observations, getObservationsLayers, parsedFilters, parsedChartObservations, parsedTableObservations } = this.props;
+
     // Hard coded values
     const inputs = [
-      'category',
-      'country',
       'date',
-      'evidence',
+      'status',
+      'country',
+      'operator',
       'fmu',
+      'category',
+      'observation',
       'level',
+      'report',
+      'evidence',
       'litigation-status',
       'location',
-      'observation',
+      'location-accuracy',
       'observer-organizations',
       'observer-types',
       'operator-type',
-      'operator',
-      'report',
-      'subcategory'
+      'subcategory',
+      'relevant-operators'
     ];
 
     const changeOfLabelLookup = {
-      'litigation-status': 'Litigation Status',
-      'observer-organizations': 'Observer Organizations',
-      'observer-types': 'Observer Types',
-      'operator-type': 'Operator Type',
-      fmu: 'FMU',
-      level: 'Severity',
-      observation: 'Detail',
-      operator: 'Producer'
+      level: 'severity',
+      observation: 'detail'
     };
 
     const tableOptions = inputs
       .map(column => ({
-        label: Object.keys(changeOfLabelLookup).includes(column) ? changeOfLabelLookup[column] :
-          capitalize(column),
+        label: Object.keys(changeOfLabelLookup).includes(column) ? this.props.intl.formatMessage({ id: changeOfLabelLookup[column] }) :
+          this.props.intl.formatMessage({ id: column }),
         value: column
       }));
 
@@ -187,6 +231,35 @@ class ObservationsPage extends React.Component {
         Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'date' })}</span>,
         accessor: 'date',
         minWidth: 75
+      },
+      {
+        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'status' })}</span>,
+        accessor: 'status',
+        minWidth: 150,
+        className: 'status',
+        Cell: attr => (
+          <span>
+            {this.props.intl.formatMessage({ id: `observations.status-${attr.value}` })}
+
+            {[7, 8, 9].includes(attr.value) &&
+              <Tooltip
+                placement="bottom"
+                overlay={(
+                  <div style={{ maxWidth: 200 }}>
+                    {this.props.intl.formatMessage({ id: `observations.status-${attr.value}.info` })}
+                  </div>
+                )}
+                overlayClassName="c-tooltip no-pointer-events"
+              >
+                <button
+                  className="c-button -icon -primary"
+                >
+                  <Icon name="icon-info" className="-smaller" />
+                </button>
+              </Tooltip>
+            }
+          </span>
+        )
       },
       {
         Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'country' })}</span>,
@@ -242,15 +315,37 @@ class ObservationsPage extends React.Component {
         Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'subcategory' })}</span>,
         accessor: 'subcategory',
         headerClassName: '-a-left',
-        className: 'subcategory',
+        className: 'subcategory description',
         minWidth: 250
       },
       {
         Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'evidence' })}</span>,
         accessor: 'evidence',
         headerClassName: '-a-left',
-        className: 'evidence',
-        minWidth: 250
+        className: 'evidence description',
+        minWidth: 250,
+        Cell: attr => (
+          <div className="evidence-item-wrapper">
+            {Array.isArray(attr.value) &&
+              attr.value.map(v => (
+                <a
+                  href={v.attachment.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="evidence-item"
+                >
+                  <Icon className="" name="icon-file-empty" />
+                </a>
+              ))
+            }
+
+            {!Array.isArray(attr.value) &&
+              <span className="evidence-item-text">{attr.value}</span>
+            }
+
+          </div>
+        )
+
       },
       {
         Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'litigation-status' })}</span>,
@@ -264,9 +359,13 @@ class ObservationsPage extends React.Component {
         accessor: 'observation',
         headerClassName: '-a-left',
         className: 'description',
-        minWidth: 250,
+        minWidth: 200,
         Cell: attr => (
-          <ReadMore lines={2}>
+          <ReadMore
+            lines={2}
+            more={this.props.intl.formatMessage({ id: 'Read more' })}
+            less={this.props.intl.formatMessage({ id: 'Show less' })}
+          >
             {attr.value}
           </ReadMore>
         )
@@ -298,7 +397,14 @@ class ObservationsPage extends React.Component {
               <span className="report-item-text">-</span>
               }
           </div>
-          )
+        )
+      },
+      {
+        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'location-accuracy' })}</span>,
+        accessor: 'location-accuracy',
+        headerClassName: '-a-left',
+        className: 'location-accuracy',
+        minWidth: 250
       },
       {
         Header: '',
@@ -318,7 +424,16 @@ class ObservationsPage extends React.Component {
               </button>
             }
           </div>
+      },
+      {
+        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'relevant-operators' })}</span>,
+        accessor: 'relevant-operators',
+        headerClassName: '-a-left',
+        className: 'relevant-operators',
+        minWidth: 250,
+        Cell: attr => <ul className="cell-list">{attr.value.map(operator => (<li>{operator}</li>))}</ul>
       }
+
     ];
 
     return (
@@ -336,103 +451,232 @@ class ObservationsPage extends React.Component {
             <div className="row l-row">
               <div className="columns small-12 medium-4">
                 <Filters
-                  options={observations.filters.options}
-                  filters={observations.filters.data}
+                  options={parsedFilters.options}
+                  filters={parsedFilters.data}
                   setFilters={this.props.setFilters}
                   filtersRefs={FILTERS_REFS}
-                  logFilter={this.logFilter}
+                  // logFilter={this.logFilter}
                 />
               </div>
 
               <div className="columns small-12 medium-6 medium-offset-1">
                 {/* Overview by category graphs */}
-                <Overview
-                  parsedObservations={parsedChartObservations}
-                />
+                <Overview parsedObservations={parsedChartObservations} />
               </div>
             </div>
           </div>
         </div>
 
-        <section className="c-section -relative">
-          <div className="l-container">
-            <h2 className="c-title">{this.props.intl.formatMessage({ id: 'observations.tab.observations-list' }) }</h2>
-            <Spinner isLoading={observations.loading} />
-            <div className="c-field -fluid -valid">
-              <CheckboxGroup
-                className="-inline -small -single-row"
-                name="observations-columns"
-                onChange={value => this.setActiveColumns(value)}
-                properties={{ default: observations.columns, name: 'observations-columns' }}
-                options={tableOptions}
+        <StaticTabs
+          options={[
+            {
+              label: this.props.intl.formatMessage({ id: 'observations.tab.observations-list' }),
+              value: 'observations-list'
+            },
+            {
+              label: this.props.intl.formatMessage({ id: 'observations.tab.map' }),
+              value: 'map-view'
+            }
+          ]}
+          defaultSelected={this.state.tab}
+          onChange={this.triggerChangeTab}
+        />
+
+        {this.state.tab === 'observations-list' && (
+          <section className="c-section -relative">
+            <div className="l-container">
+              <h2 className="c-title">
+                {this.props.intl.formatMessage({
+                  id: 'observations.tab.observations-list'
+                })}
+              </h2>
+              <Spinner isLoading={observations.loading} />
+              <div className="c-field -fluid -valid">
+                <CheckboxGroup
+                  className="-inline -small -single-row"
+                  name="observations-columns"
+                  onChange={value => this.setActiveColumns(value)}
+                  properties={{
+                    default: observations.columns,
+                    name: 'observations-columns'
+                  }}
+                  options={tableOptions}
+                />
+              </div>
+
+              <Table
+                sortable
+                data={parsedTableObservations}
+                options={{
+                  columns: columnHeaders.filter(header =>
+                    observations.columns.includes(header.accessor)
+                  ),
+                  pageSize: this.getPageSize(),
+                  pagination: true,
+                  previousText: '<',
+                  nextText: '>',
+                  noDataText: 'No rows found',
+                  showPageSizeOptions: false,
+                  // Api pagination & sort
+                  // pages: observations.totalSize,
+                  // page: this.state.page - 1,
+                  // manual: true
+                  onPageChange: page => this.onPageChange(page),
+                  defaultSorted: [
+                    {
+                      id: 'date',
+                      desc: false
+                    }
+                  ],
+                  showSubComponent: observations.columns.includes('location'),
+                  subComponent: row =>
+                    observations.columns.includes('location') && (
+                      <MapSubComponent
+                        id={row.original.id}
+                        location={row.original.location}
+                        level={row.original.level}
+                      />
+                    )
+                }}
               />
             </div>
+          </section>
+        )}
 
-            <Table
-              sortable
-              data={parsedTableObservations}
-              options={{
-                columns: columnHeaders.filter(header => observations.columns.includes(header.accessor)),
-                pageSize: this.getPageSize(),
-                pagination: true,
-                previousText: '<',
-                nextText: '>',
-                noDataText: 'No rows found',
-                showPageSizeOptions: false,
-                    // Api pagination & sort
-                    // pages: observations.totalSize,
-                    // page: this.state.page - 1,
-                    // manual: true
-                onPageChange: page => this.onPageChange(page),
-                defaultSorted: [{
-                  id: 'date',
-                  desc: false
-                }],
-                showSubComponent: observations.columns.includes('location'),
-                subComponent: row => observations.columns.includes('location') &&
-                  <MapSubComponent
-                    id={row.original.id}
-                    location={row.original.location}
-                    level={row.original.level}
-                  />
+        {this.state.tab === 'map-view' && (
+          <div className="c-map-container -static">
+            {/* Map */}
+            <Map
+              mapStyle="mapbox://styles/mapbox/light-v9"
+              // options
+              scrollZoom={false}
+              // viewport
+              viewport={observations.map}
+              onViewportChange={this.onViewportChange}
+              // Interaction
+              interactiveLayerIds={['observations-circle-0', 'observations-symbol-1', 'observations-circle-2']}
+              onClick={this.onClick}
+              onHover={this.onHover}
+
+              onLoad={({ map }) => {
+                this.map = map;
+
+                // Attribution listener
+                document
+                  .getElementById('forest-atlas-attribution')
+                  .addEventListener('click', this.onCustomAttribute);
               }}
+              onUnmount={() => this.map = null}
+              // Options
+              transformRequest={(url, resourceType) => {
+                if (url.startsWith(process.env.OTP_API)) {
+                  return {
+                    url,
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'OTP-API-KEY': process.env.OTP_API_KEY
+                    }
+                  };
+                }
+
+                return null;
+              }}
+              mapOptions={{
+                customAttribution:
+                  '<a id="forest-atlas-attribution" href="http://cod.forest-atlas.org/?l=en" rel="noopener noreferrer" target="_blank">Forest Atlas</a>'
+              }}
+            >
+              {map => (
+                <Fragment>
+                  {/* LAYER MANAGER */}
+                  <LayerManager
+                    map={map}
+                    layers={getObservationsLayers}
+                  />
+                </Fragment>
+              )}
+            </Map>
+
+            {/* LEGEND */}
+            <Legend
+              layerGroups={[
+                {
+                  id: 'severity',
+                  dataset: 'severity',
+                  name: this.props.intl.formatMessage({ id: 'severity' }),
+                  layers: [
+                    {
+                      opacity: 1,
+                      active: true,
+                      name: this.props.intl.formatMessage({ id: 'severity' }),
+                      legendConfig: {
+                        type: 'basic',
+                        items: LEGEND_SEVERITY.list.map(l => (
+                          { name: this.props.intl.formatMessage({ id: l.label }), color: l.fill }
+                        ))
+                      }
+                    }
+                  ]
+                }
+              ]}
+              collapsable={false}
+              sortable={false}
+              setLayerSettings={() => {}}
             />
+
+
+            {/* MapControls */}
+            <MapControls>
+              <ZoomControl
+                zoom={observations.map.zoom}
+                onZoomChange={(zoom) => {
+                  this.props.setObservationsMapLocation({
+                    ...observations.map,
+                    zoom,
+                    transitionDuration: 500
+                  });
+                }}
+              />
+            </MapControls>
           </div>
-        </section>
+        )}
       </Layout>
     );
   }
 }
 
 ObservationsPage.propTypes = {
+  url: PropTypes.shape({}).isRequired,
   observations: PropTypes.object,
-  filters: PropTypes.object,
-  isExpanded: PropTypes.bool,
-  intl: intlShape.isRequired
+  intl: intlShape.isRequired,
+  parsedFilters: PropTypes.object,
+  getObservationsLayers: PropTypes.array,
+  parsedChartObservations: PropTypes.array,
+  parsedTableObservations: PropTypes.array,
+
+  getObservations: PropTypes.func.isRequired,
+  getObservationsUrl: PropTypes.func.isRequired,
+  setActiveColumns: PropTypes.func.isRequired,
+  setFilters: PropTypes.func.isRequired,
+  setObservationsMapLocation: PropTypes.func.isRequired,
+  setObservationsMapCluster: PropTypes.func.isRequired
 };
 
 export default withTracker(withIntl(connect(
   state => ({
     observations: state.observations,
+    parsedFilters: getParsedFilters(state),
     parsedChartObservations: getParsedChartObservations(state),
-    parsedTableObservations: getParsedTableObservations(state)
+    parsedTableObservations: getParsedTableObservations(state),
+    getObservationsLayers: getObservationsLayers(state)
   }),
-  dispatch => ({
-    getObservations() {
-      dispatch(getObservations());
-    },
-    getFilters() {
-      dispatch(getFilters());
-    },
-    getObservationsUrl(url) {
-      dispatch(getObservationsUrl(url));
-    },
-    setFilters(filter) {
-      dispatch(setFilters(filter));
-      dispatch(setObservationsUrl());
-    },
-    setActiveColumns(activeColumns) {
-      dispatch(setActiveColumns(activeColumns));
-    }
-  })
+  {
+    getObservations,
+    getFilters,
+    getObservationsUrl,
+    setObservationsMapLocation,
+    setObservationsMapCluster,
+    setFilters,
+    setActiveColumns
+  }
 )(ObservationsPage)));

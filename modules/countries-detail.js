@@ -7,10 +7,17 @@ const GET_COUNTRY_SUCCESS = 'GET_COUNTRY_SUCCESS';
 const GET_COUNTRY_ERROR = 'GET_COUNTRY_ERROR';
 const GET_COUNTRY_LOADING = 'GET_COUNTRY_LOADING';
 
-/* Constants */
-const GET_COUNTRY_DOCUMENTS_SUCCESS = 'GET_COUNTRY_DOCUMENTS_SUCCESS';
-const GET_COUNTRY_DOCUMENTS_ERROR = 'GET_COUNTRY_DOCUMENTS_ERROR';
-const GET_COUNTRY_DOCUMENTS_LOADING = 'GET_COUNTRY_DOCUMENTS_LOADING';
+const GET_COUNTRY_OBSERVATIONS_SUCCESS = 'GET_COUNTRY_OBSERVATIONS_SUCCESS';
+const GET_COUNTRY_OBSERVATIONS_ERROR = 'GET_COUNTRY_OBSERVATIONS_ERROR';
+const GET_COUNTRY_OBSERVATIONS_LOADING = 'GET_COUNTRY_OBSERVATIONS_LOADING';
+
+const GET_COUNTRY_LINKS_SUCCESS = 'GET_COUNTRY_LINKS_SUCCESS';
+const GET_COUNTRY_LINKS_ERROR = 'GET_COUNTRY_LINKS_ERROR';
+const GET_COUNTRY_LINKS_LOADING = 'GET_COUNTRY_LINKS_LOADING';
+
+const GET_COUNTRY_VPAS_SUCCESS = 'GET_COUNTRY_VPAS_SUCCESS';
+const GET_COUNTRY_VPAS_ERROR = 'GET_COUNTRY_VPAS_ERROR';
+const GET_COUNTRY_VPAS_LOADING = 'GET_COUNTRY_VPAS_LOADING';
 
 /* Initial state */
 const initialState = {
@@ -19,6 +26,21 @@ const initialState = {
   error: false,
   documentation: {
     data: {},
+    loading: false,
+    error: false
+  },
+  observations: {
+    data: {},
+    loading: false,
+    error: false
+  },
+  links: {
+    data: [],
+    loading: false,
+    error: false
+  },
+  vpas: {
+    data: [],
     loading: false,
     error: false
   }
@@ -38,19 +60,50 @@ export default function (state = initialState, action) {
     case GET_COUNTRY_LOADING: {
       return Object.assign({}, state, { loading: true, error: false });
     }
-    case GET_COUNTRY_DOCUMENTS_SUCCESS: {
-      const documentation = Object.assign({}, state.documentation, {
+
+    case GET_COUNTRY_OBSERVATIONS_SUCCESS: {
+      const observations = Object.assign({}, state.observations, {
         data: action.payload, loading: false, error: false
       });
-      return Object.assign({}, state, { documentation });
+      return Object.assign({}, state, { observations });
     }
-    case GET_COUNTRY_DOCUMENTS_ERROR: {
-      const documentation = Object.assign({}, state.documentation, { error: true, loading: false });
-      return Object.assign({}, state, { documentation });
+    case GET_COUNTRY_OBSERVATIONS_ERROR: {
+      const observations = Object.assign({}, state.observations, { error: true, loading: false });
+      return Object.assign({}, state, { observations });
     }
-    case GET_COUNTRY_DOCUMENTS_LOADING: {
-      const documentation = Object.assign({}, state.documentation, { loading: true, error: false });
-      return Object.assign({}, state, { documentation });
+    case GET_COUNTRY_OBSERVATIONS_LOADING: {
+      const observations = Object.assign({}, state.observations, { loading: true, error: false });
+      return Object.assign({}, state, { observations });
+    }
+
+    case GET_COUNTRY_LINKS_SUCCESS: {
+      const links = Object.assign({}, state.links, {
+        data: action.payload, loading: false, error: false
+      });
+      return Object.assign({}, state, { links });
+    }
+    case GET_COUNTRY_LINKS_ERROR: {
+      const links = Object.assign({}, state.links, { error: true, loading: false });
+      return Object.assign({}, state, { links });
+    }
+    case GET_COUNTRY_LINKS_LOADING: {
+      const links = Object.assign({}, state.links, { loading: true, error: false });
+      return Object.assign({}, state, { links });
+    }
+
+    case GET_COUNTRY_VPAS_SUCCESS: {
+      const vpas = Object.assign({}, state.vpas, {
+        data: action.payload, loading: false, error: false
+      });
+      return Object.assign({}, state, { vpas });
+    }
+    case GET_COUNTRY_VPAS_ERROR: {
+      const vpas = Object.assign({}, state.vpas, { error: true, loading: false });
+      return Object.assign({}, state, { vpas });
+    }
+    case GET_COUNTRY_VPAS_LOADING: {
+      const vpas = Object.assign({}, state.vpas, { loading: true, error: false });
+      return Object.assign({}, state, { vpas });
     }
 
     default:
@@ -112,3 +165,151 @@ export function getCountry(id) {
       });
   };
 }
+
+
+/* Action creators */
+export function getCountryObservations(id) {
+  return (dispatch, getState) => {
+    const { user, language } = getState();
+
+    // Waiting for fetch from server -> Dispatch loading
+    dispatch({ type: GET_COUNTRY_OBSERVATIONS_LOADING });
+
+    const includeFields = [
+      'severity',
+      'subcategory',
+      'subcategory.category',
+      'observation-report',
+      'observation-documents'
+    ];
+
+    const lang = language === 'zh' ? 'zh-CN' : language;
+
+    const queryParams = queryString.stringify({
+      ...!!includeFields.length && { include: includeFields.join(',') },
+      locale: lang,
+      'filter[country_id]': id
+    });
+
+
+    return fetch(`${process.env.OTP_API}/observations/?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'OTP-API-KEY': process.env.OTP_API_KEY,
+        Authorization: user.token ? `Bearer ${user.token}` : undefined
+      }
+    })
+      .then((response) => {
+        if (response.ok) return response.json();
+        throw new Error(response.statusText);
+      })
+      .then((country) => {
+        // Fetch from server ok -> Dispatch country and deserialize the data
+        const dataParsed = JSONA.deserialize(country);
+
+        dispatch({
+          type: GET_COUNTRY_OBSERVATIONS_SUCCESS,
+          payload: dataParsed
+        });
+      })
+      .catch((err) => {
+        // Fetch from server ko -> Dispatch error
+        dispatch({
+          type: GET_COUNTRY_OBSERVATIONS_ERROR,
+          payload: err.message
+        });
+      });
+  };
+}
+
+export function getCountryLinks(id) {
+  return (dispatch, getState) => {
+    const { user, language } = getState();
+
+    // Waiting for fetch from server -> Dispatch loading
+    dispatch({ type: GET_COUNTRY_LINKS_LOADING });
+
+    const lang = language === 'zh' ? 'zh-CN' : language;
+
+    const queryParams = queryString.stringify({
+      country: id,
+      locale: lang
+    });
+
+    return fetch(`${process.env.OTP_API}/country-links?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'OTP-API-KEY': process.env.OTP_API_KEY,
+        Authorization: user.token ? `Bearer ${user.token}` : undefined
+      }
+    })
+      .then((response) => {
+        if (response.ok) return response.json();
+        throw new Error(response.statusText);
+      })
+      .then((links) => {
+        // Fetch from server ok -> Dispatch country and deserialize the data
+        const dataParsed = JSONA.deserialize(links);
+
+        dispatch({
+          type: GET_COUNTRY_LINKS_SUCCESS,
+          payload: dataParsed
+        });
+      })
+      .catch((err) => {
+        // Fetch from server ko -> Dispatch error
+        dispatch({
+          type: GET_COUNTRY_LINKS_ERROR,
+          payload: err.message
+        });
+      });
+  };
+}
+
+export function getCountryVPAs(id) {
+  return (dispatch, getState) => {
+    const { user, language } = getState();
+
+    // Waiting for fetch from server -> Dispatch loading
+    dispatch({ type: GET_COUNTRY_VPAS_LOADING });
+
+    const lang = language === 'zh' ? 'zh-CN' : language;
+
+    const queryParams = queryString.stringify({
+      country: id,
+      locale: lang
+    });
+
+    return fetch(`${process.env.OTP_API}/country-vpas?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'OTP-API-KEY': process.env.OTP_API_KEY,
+        Authorization: user.token ? `Bearer ${user.token}` : undefined
+      }
+    })
+      .then((response) => {
+        if (response.ok) return response.json();
+        throw new Error(response.statusText);
+      })
+      .then((links) => {
+        // Fetch from server ok -> Dispatch country and deserialize the data
+        const dataParsed = JSONA.deserialize(links);
+
+        dispatch({
+          type: GET_COUNTRY_VPAS_SUCCESS,
+          payload: dataParsed
+        });
+      })
+      .catch((err) => {
+        // Fetch from server ko -> Dispatch error
+        dispatch({
+          type: GET_COUNTRY_VPAS_ERROR,
+          payload: err.message
+        });
+      });
+  };
+}
+

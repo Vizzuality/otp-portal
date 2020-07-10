@@ -19,12 +19,19 @@ class HelpTutorials extends React.Component {
       duration: 500,
       easing: 'easeOutQuart'
     });
+
+    if (this.props.url.query.article) {
+      setTimeout(() => {
+        this.triggerScrollTo(`#${this.props.url.query.article}`);
+      }, 250);
+    }
   }
 
   componentDidUpdate() {
     if (this.props.url.query.article) {
-      const target = document.querySelector(`#${this.props.url.query.article}`);
-      this.moveTo.move(target);
+      setTimeout(() => {
+        this.triggerScrollTo(`#${this.props.url.query.article}`);
+      }, 250);
     }
   }
 

@@ -3,9 +3,10 @@
   .Select {
 
     &.-filled {
-      .Select-control {
-        border-bottom: 2px solid rgba($color-tertiary, .2);;
+      &.Select--multi .Select-input {
+        margin-left: $space-1;
       }
+
     }
 
     .Select-control {
@@ -13,6 +14,7 @@
       border: 0;
       border-radius: 0;
       cursor: text;
+      height: 30px;
 
       &:hover {
         box-shadow: none;
@@ -37,19 +39,25 @@
         border-bottom: 2px solid rgba($color-white, .5);
         width: 6px;
         height: 6px;
-        transform: rotate(45deg);
-        margin-right: -9px;
+        transform: rotate(45deg) translate(-3px,-3px);
+        margin-right: 0;
       }
 
       .Select-placeholder {
-        color: rgba($color-white, .3);
-        text-transform: uppercase;
+        color: rgba($color-white, .5);
         font-family: $font-family-proximanova;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        line-height: 32px;
+        font-weight: 700;
+        font-size: $font-size-extrasmall;
         padding-left: 0;
       }
     }
 
     .Select-multi-value-wrapper {
+      margin: 0;
+
       .Select-value {
         position: relative;
         color: white;
@@ -60,6 +68,7 @@
         margin-left: 0;
         margin-right: 3px;
         margin-bottom: 5px;
+        margin-top: 0;
 
         &.last-child {
           margin-right: 0;
@@ -69,20 +78,20 @@
           font-family: $font-family-proximanova;
           text-transform: uppercase;
           letter-spacing: 1px;
-          line-height: 19px;
+          line-height: 20px;
           font-weight: 700;
-          font-size: $font-size-small;
+          font-size: $font-size-extrasmall;
           margin-right: 20px;
-          margin-bottom: -1px;
+          word-break: break-word;
         }
 
         .Select-value-icon {
           position: absolute;
           right: 3px;
-          top: 1px;
+          top: 0px;
           border: 0;
           font-size: 16px;
-          line-height: 19px;
+          line-height: 20px;
           color: $color-white;
 
           &:hover {
@@ -90,6 +99,14 @@
             opacity: .7;
           }
         }
+      }
+    }
+
+    &.Select--multi .Select-input {
+      margin-left: 0;
+
+      > input {
+        padding: 0px;
       }
     }
 

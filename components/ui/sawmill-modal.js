@@ -1,13 +1,10 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 // Redux
 import { connect } from 'react-redux';
 import {
-  setMarkerLocation,
-  setMarkerMode,
-  getSawMillLocationById,
   setMapLocation,
   unmountMap
 } from 'modules/sawmill-map';
@@ -24,10 +21,10 @@ import Field from 'components/form/Field';
 import Input from 'components/form/Input';
 import Checkbox from 'components/form/Checkbox';
 import Spinner from 'components/ui/spinner';
-import Map from 'components/map/map';
+import Map from 'components/map-new';
+import LayerManager from 'components/map-new/layer-manager';
 import MapControls from 'components/map/map-controls';
 import ZoomControl from 'components/map/controls/zoom-control';
-import PickerControl from 'components/map/controls/picker-control';
 import LocationSearch from 'components/map/location-search';
 
 // Constants
@@ -53,16 +50,12 @@ const FORM_ELEMENTS = {
 
 class SawmillModal extends React.Component {
   static propTypes = {
-    markerMode: PropTypes.bool,
     user: PropTypes.object,
     sawmill: PropTypes.object,
     intl: intlShape.isRequired,
     sawmillMap: PropTypes.object,
-    lngLat: PropTypes.object,
     onChange: PropTypes.func,
     setMapLocation: PropTypes.func,
-    setMarkerLocation: PropTypes.func,
-    setMarkerMode: PropTypes.func,
     unmountMap: PropTypes.func
   };
 
@@ -75,8 +68,8 @@ class SawmillModal extends React.Component {
     const { sawmill } = this.props;
     const emptyFormState = {
       name: '',
-      lat: '',
-      lng: '',
+      lat: 0,
+      lng: 0,
       'is-active': false
     };
 
@@ -93,15 +86,15 @@ class SawmillModal extends React.Component {
   }
 
   componentDidMount() {
-    const { sawmill } = this.props;
-
+    const { sawmill, sawmillMap } = this.props;
     if (sawmill) {
+      const { viewport } = sawmillMap;
+
       this.props.setMapLocation({
-        center: {
-          lat: sawmill.lat, lng: sawmill.lng
-        }
+        ...viewport,
+        latitude: sawmill.lat,
+        longitude: sawmill.lng
       });
-      this.props.setMarkerLocation({ lat: sawmill.lat, lng: sawmill.lng });
     }
   }
 
@@ -111,58 +104,19 @@ class SawmillModal extends React.Component {
 
   // HELPERS
   getBody() {
-    const { sawmill, lngLat } = this.props;
+    const { sawmill } = this.props;
     return {
       data: {
         ...!!sawmill && !!sawmill.id && { id: sawmill.id },
         type: 'sawmills',
         attributes: {
           name: this.state.form.name,
-          lat: lngLat.lat,
-          lng: lngLat.lng,
+          lat: this.state.form.lat,
+          lng: this.state.form.lng,
           'is-active': this.state.form['is-active']
         }
       }
     };
-  }
-
-  getMarkerLayers(lng, lat, sawmill) {
-    const { lngLat } = this.props;
-    if (!lngLat) return [];
-
-    return [
-      {
-        id: `sawmill-${lngLat.lat}-${lngLat.lng}`,
-        provider: 'geojson',
-        source: {
-          type: 'geojson',
-          data: {
-            ...!sawmill && {
-              type: 'FeatureCollection',
-              features: [
-                {
-                  type: 'Feature',
-                  geometry: {
-                    type: 'Point',
-                    coordinates: [lngLat.lng, lngLat.lat]
-                  }
-                }
-              ]
-            }
-          }
-        },
-        layers: [{
-          id: 'sawmill',
-          source: `sawmill-${lngLat.lat}-${lngLat.lng}`,
-          name: 'Sawmill',
-          type: 'circle',
-          paint: {
-            'circle-color': '#e98300',
-            'circle-radius': 10
-          }
-        }]
-      }
-    ];
   }
 
   // UI EVENTS
@@ -201,54 +155,44 @@ class SawmillModal extends React.Component {
   }
 
   handleChange(value) {
+    const { sawmillMap } = this.props;
+    const { viewport } = sawmillMap;
+
     const form = Object.assign({}, this.state.form, value);
     this.setState({ form });
-  }
-
-  handleMapClick = (map, event) => {
-    const { markerMode } = this.props;
-    const { lng, lat } = event.lngLat;
-    if (!markerMode) return;
 
     this.props.setMapLocation({
-      center: {
-        lat, lng
-      }
+      ...viewport,
+      latitude: this.state.form.lat,
+      longitude: this.state.form.lng
     });
-
-    this.props.setMarkerLocation({ lat, lng });
   }
 
-  handleMarkerLocationChange({ lat, lng }) {
-    const { lngLat } = this.props;
+  setMapLocation = (location) => {
+    const { sawmillMap } = this.props;
+    const { viewport } = sawmillMap;
 
     this.props.setMapLocation({
-      center: {
-        lat: lat || lngLat.lat,
-        lng: lng || lngLat.lng
-      }
+      ...viewport,
+      ...location
     });
 
-    this.props.setMarkerLocation({
-      lat: lat || lngLat.lat,
-      lng: lng || lngLat.lng
+    const form = Object.assign({}, this.state.form, {
+      lat: viewport.latitude,
+      lng: viewport.longitude
     });
+    this.setState({ form });
   }
 
   render() {
     const { submitting } = this.state;
     const {
-      markerMode,
       sawmill,
       sawmillMap
     } = this.props;
 
     const submittingClassName = classnames({
       '-submitting': submitting
-    });
-
-    const mapContainerClassName = classnames({
-      '-picker': markerMode
     });
 
     return (
@@ -296,34 +240,90 @@ class SawmillModal extends React.Component {
               </div>
             </div>
 
-            <div className={`c-map-container -modal ${mapContainerClassName}`}>
+            <div className={'c-map-container -modal'}>
               <Spinner isLoading={sawmillMap.loading} className="-light" />
+
               <LocationSearch
                 setMapLocation={this.props.setMapLocation}
-                setMarkerLocation={this.props.setMarkerLocation}
               />
+
+              {/* Map */}
               <Map
-                ref={(map) => { this.mapContainer = map; }}
-                mapOptions={sawmillMap.mapOptions}
-                mapListeners={{
-                  click: (map, event) => {
-                    this.handleMapClick(map, event);
+                mapStyle="mapbox://styles/mapbox/light-v9"
+
+                // viewport
+                viewport={sawmillMap.viewport}
+                onViewportChange={this.setMapLocation}
+
+                onClick={this.onClick}
+
+                // Options
+                transformRequest={(url, resourceType) => {
+                  if (
+                    resourceType === 'Source' &&
+                    url.startsWith(process.env.OTP_API)
+                  ) {
+                    return {
+                      url,
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'OTP-API-KEY': process.env.OTP_API_KEY
+                      }
+                    };
                   }
+
+                  return null;
                 }}
-                layers={this.getMarkerLayers()}
-              />
+              >
+                {map => (
+                  <Fragment>
+                    {/* LAYER MANAGER */}
+                    <LayerManager
+                      map={map}
+                      layers={[
+                        {
+                          id: 'observation',
+                          type: 'geojson',
+                          source: {
+                            type: 'geojson',
+                            data: {
+                              type: 'FeatureCollection',
+                              features: [
+                                {
+                                  type: 'Feature',
+                                  geometry: {
+                                    type: 'Point',
+                                    coordinates: [sawmillMap.viewport.longitude, sawmillMap.viewport.latitude]
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          render: {
+                            layers: [{
+                              type: 'circle',
+                              paint: {
+                                'circle-color': '#e98300',
+                                'circle-radius': 10
+                              }
+                            }]
+                          }
+                        }
+                      ]}
+                    />
+                  </Fragment>
+                )}
+              </Map>
+
               <MapControls>
                 <ZoomControl
-                  zoom={sawmillMap.mapOptions.zoom}
+                  zoom={sawmillMap.viewport.zoom}
                   onZoomChange={(zoom) => {
-                    this.props.setMapLocation({
-                      zoom
+                    this.setMapLocation({
+                      zoom,
+                      transitionDuration: 500
                     });
                   }}
-                />
-                <PickerControl
-                  pickerMode={markerMode}
-                  setMarkerMode={this.props.setMarkerMode}
                 />
               </MapControls>
             </div>
@@ -333,14 +333,14 @@ class SawmillModal extends React.Component {
                 <div className="columns medium-6 small-12">
                   {/* DATE */}
                   <Field
-                    onChange={value => this.handleMarkerLocationChange({ lat: value })}
+                    onChange={value => this.handleChange({ lat: +value })}
                     className="-fluid"
                     properties={{
                       name: 'lat',
                       label: this.props.intl.formatMessage({ id: 'sawmills.modal.lat' }),
                       type: 'number',
-                      default: this.state.form.lat,
-                      value: this.props.lngLat.lat
+                      default: this.state.form.lat.toFixed(2),
+                      value: this.state.form.lat.toFixed(2),
                     }}
                   >
                     {Input}
@@ -349,14 +349,14 @@ class SawmillModal extends React.Component {
                 <div className="columns medium-6 small-12">
                   {/* DATE */}
                   <Field
-                    onChange={value => this.handleMarkerLocationChange({ lng: value })}
+                    onChange={value => this.handleChange({ lng: +value })}
                     className="-fluid"
                     properties={{
                       name: 'lng',
                       label: this.props.intl.formatMessage({ id: 'sawmills.modal.lng' }),
                       type: 'number',
-                      default: this.state.form.lng,
-                      value: this.props.lngLat.lng
+                      default: this.state.form.lng.toFixed(2),
+                      value: this.state.form.lng.toFixed(2)
                     }}
                   >
                     {Input}
@@ -398,14 +398,9 @@ export default injectIntl(connect(
   state => ({
     user: state.user,
     operatorsDetailFmus: state.operatorsDetailFmus,
-    sawmillMap: state.sawmillMap,
-    markerMode: state.sawmillMap.markerMode,
-    lngLat: state.sawmillMap.lngLat
+    sawmillMap: state.sawmillMap
   }), {
     setMapLocation,
-    setMarkerLocation,
-    setMarkerMode,
-    getSawMillLocationById,
     unmountMap
   }
 )(SawmillModal));

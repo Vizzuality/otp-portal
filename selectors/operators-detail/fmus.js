@@ -5,6 +5,7 @@ import isEmpty from 'lodash/isEmpty';
 import flatten from 'lodash/flatten';
 import uniqBy from 'lodash/uniqBy';
 import sortBy from 'lodash/sortBy';
+import slugify from 'slugify';
 
 import { replace } from 'layer-manager';
 
@@ -21,6 +22,7 @@ const layersSettings = state => state.operatorsDetailFmus.layersSettings;
 const interactions = state => state.operatorsDetailFmus.interactions;
 const hoverInteractions = state => state.operatorsDetailFmus.hoverInteractions;
 const latlng = state => state.operatorsDetailFmus.latlng;
+const hoverLatLng = state => state.operatorsDetailFmus.hoverLatLng;
 
 const fmu = state => state.operatorsDetailFmus.fmu;
 const fmuBounds = state => state.operatorsDetailFmus.fmuBounds;
@@ -30,13 +32,15 @@ const analysis = state => state.operatorsDetailFmus.analysis;
 export const getActiveLayers = createSelector(
   layersActive, layers, layersSettings, interactions, hoverInteractions, fmu, operatorsDetail,
   (_layersActive, _layers, _layersSettings, _interactions, _hoverInteractions, _fmu, _operatorsDetail) => {
-    const { id: operator_id } = _operatorsDetail;
+    const { id: operator_id, fmus, country } = _operatorsDetail;
+    const fmuNames = fmus.map(f => slugify(f.name, { lower: true }));
+
     // Layers
     const aLayers = _layers.map((l) => {
       const { id, paramsConfig, decodeConfig, decodeFunction, timelineConfig } = l;
       const settings = _layersSettings[id] || {};
 
-      if (_layersActive.includes(id) && _fmu) {
+      if (_layersActive.includes(id) && _fmu && (!l.iso || l.iso === country.iso)) {
         const interactionParams = { clickId: Number(_fmu) };
         const hoverInteractionParams = _hoverInteractions[id] ? { hoverId: _hoverInteractions[id].data.cartodb_id || _hoverInteractions[id].data.id } : { hoverId: null };
 
@@ -46,11 +50,11 @@ export const getActiveLayers = createSelector(
           ...settings,
 
           ...(!!paramsConfig) && {
-            params: getParams(paramsConfig, { ...settings.params, ...interactionParams, ...hoverInteractionParams, operator_id })
+            params: getParams(paramsConfig, { ...settings.params, ...interactionParams, ...hoverInteractionParams, operator_id: Number(operator_id), fmuNames })
           },
 
           ...(!!decodeConfig) && {
-            decodeParams: getParams(decodeConfig, { ...timelineConfig, ...settings.decodeParams, operator_id }),
+            decodeParams: getParams(decodeConfig, { ...timelineConfig, ...settings.decodeParams, ...settings.timelineParams, operator_id: Number(operator_id), fmuNames }),
             decodeFunction
           }
         };
@@ -66,9 +70,12 @@ export const getActiveLayers = createSelector(
 );
 
 export const getActiveInteractiveLayersIds = createSelector(
-  [layers, layersSettings, layersActive],
-  (_layers, _layersSettings, _layersActive) => {
+  [layers, layersSettings, layersActive, operatorsDetail],
+  (_layers, _layersSettings, _layersActive, _operatorsDetail) => {
     if (!_layers) return [];
+
+    const { country } = _operatorsDetail;
+
 
     const getIds = (layer) => {
       const { id, config, interactionConfig } = layer;
@@ -91,7 +98,7 @@ export const getActiveInteractiveLayersIds = createSelector(
     return flatten(compact(_layersActive.map((kActive) => {
       const layer = _layers.find(l => l.id === kActive);
 
-      if (!layer) {
+      if (!layer || (layer.iso && layer.iso !== country.iso)) {
         return null;
       }
 
@@ -137,16 +144,41 @@ export const getActiveInteractiveLayers = createSelector(
   }
 );
 
+export const getActiveHoverInteractiveLayers = createSelector(
+  [layers, hoverInteractions],
+  (_layers, _hoverInteractions) => {
+    if (!_layers || isEmpty(_hoverInteractions)) return {};
+
+    const allLayers = uniqBy(flatten(_layers.map((l) => {
+      const { config, name } = l;
+      const { type } = config;
+
+      if (type === 'group') {
+        return config.layers.map(lc => ({ ...lc, name: `${name} - ${lc.name}` }));
+      }
+
+      return l;
+    })), 'id');
+
+    const interactiveLayerKeys = Object.keys(_hoverInteractions);
+    const interactiveLayers = allLayers.filter(l => interactiveLayerKeys.includes(l.id));
+
+    return interactiveLayers.map(l => ({ ...l, data: _hoverInteractions[l.id] }));
+  }
+);
+
+
 export const getLegendLayers = createSelector(
-  [layers, layersSettings, layersActive, analysis, fmu, intl], (_layers, _layersSettings, _layersActive, _analysis, _fmu, _intl) => {
+  [layers, layersSettings, layersActive, analysis, fmu, intl, operatorsDetail], (_layers, _layersSettings, _layersActive, _analysis, _fmu, _intl, _operatorsDetail) => {
     if (!_layers) return [];
     const legendLayers = _layers.filter(l => l.legendConfig && !isEmpty(l.legendConfig));
+    const { country } = _operatorsDetail;
 
     const layerGroups = [];
 
     _layersActive.forEach((lid) => {
       const layer = legendLayers.find(r => r.id === lid);
-      if (!layer || lid === 'fmus') return false;
+      if (!layer || lid === 'fmus' || (layer.iso && layer.iso !== country.iso)) return false;
 
       const { id, name, description, legendConfig, paramsConfig, sqlConfig, decodeConfig, timelineConfig } = layer;
 
@@ -173,6 +205,7 @@ export const getLegendLayers = createSelector(
         analysis: analysisParams,
         layers: [{
           ...layer,
+          name: _intl.formatMessage({ id: name || '-' }),
           opacity: 1,
           active: true,
           legendConfig: {
@@ -206,9 +239,10 @@ export const getLegendLayers = createSelector(
 
           ...!!timelineConfig && {
             timelineParams: {
-              ...JSON.parse(replace(JSON.stringify(timelineConfig), params)),
+              ...JSON.parse(replace(JSON.stringify(timelineConfig), { ...params, ...decodeParams })),
               ...getParams(paramsConfig, lSettings.params),
-              ...getParams(decodeConfig, lSettings.decodeParams)
+              ...getParams(decodeConfig, lSettings.decodeParams),
+              ...lSettings.timelineParams
             }
           }
         }],
@@ -236,6 +270,23 @@ export const getPopup = createSelector(
     return popup;
   }
 );
+
+export const getHoverPopup = createSelector(
+  [hoverLatLng],
+  (_hoverLatLng) => {
+    if (isEmpty(_hoverLatLng) || !_hoverLatLng.lat || !_hoverLatLng.lng) {
+      return {};
+    }
+
+    const popup = {
+      latitude: _hoverLatLng.lat,
+      longitude: _hoverLatLng.lng
+    };
+
+    return popup;
+  }
+);
+
 
 export const getFMUs = createSelector(
   operatorsDetail,
@@ -274,7 +325,7 @@ export const getFMU = createSelector(
         return {
           ...acc,
           [key]: {
-            ...getParams(decodeConfig, { ...timelineConfig, ...settings.decodeParams }),
+            ...getParams(decodeConfig, { ...timelineConfig, ...settings.decodeParams })
           }
         };
       }, {})

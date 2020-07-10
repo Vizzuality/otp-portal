@@ -114,7 +114,7 @@ class DocCard extends React.Component {
 
     return (
       <div className={`c-doc-card ${classNames}`}>
-        {!publicState &&
+        {!publicState && isActiveUser &&
           <div className="doc-card-private">
             {this.props.intl.formatMessage({ id: 'private' })}
           </div>

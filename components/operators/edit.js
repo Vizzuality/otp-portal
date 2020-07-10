@@ -164,14 +164,14 @@ class EditOperator extends React.Component {
 
             try {
               errors.forEach(er =>
-                toastr.error('Error', `${er.title} - ${er.detail}`)
+                toastr.error(this.props.intl.formatMessage({ id: 'Error' }), `${er.title} - ${er.detail}`)
               );
             } catch (e) {
-              toastr.error('Error', 'Oops! There was an error, try again');
+              toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Oops! There was an error, try again' }));
             }
           });
       } else {
-        toastr.error('Error', 'Fill all the required fields');
+        toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Fill all the required fields' }));
       }
     }, 0);
   }

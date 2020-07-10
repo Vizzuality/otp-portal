@@ -89,7 +89,7 @@ const MAP_LAYERS_OPERATORS_DETAIL = [
     source: {
       type: 'geojson',
       data: {
-        url: `${process.env.OTP_API}/fmus?country_ids=188,53&operator_ids={{OPERATOR_ID}}&format=geojson`,
+        url: `${process.env.OTP_API}/fmus?country_ids=${process.env.OTP_COUNTRIES_IDS.join(',')}&operator_ids={{OPERATOR_ID}}&format=geojson`,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ const MAP_LAYERS_OPERATORS_DETAIL = [
     source: {
       type: 'geojson',
       data: {
-        url: `${process.env.OTP_API}/sawmills?country_ids=188,53&operator_ids={{OPERATOR_ID}}&format=geojson`,
+        url: `${process.env.OTP_API}/sawmills?country_ids=${process.env.OTP_COUNTRIES_IDS.join(',')}&operator_ids={{OPERATOR_ID}}&format=geojson`,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

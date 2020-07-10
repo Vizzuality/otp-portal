@@ -25,6 +25,7 @@ class DocCardUpload extends React.Component {
 
     // BINDINGS
     this.triggerAddFile = this.triggerAddFile.bind(this);
+    this.triggerEditFile = this.triggerEditFile.bind(this);
     this.triggerDeleteFile = this.triggerDeleteFile.bind(this);
     this.triggerNotRequiredFile = this.triggerNotRequiredFile.bind(this);
 
@@ -37,8 +38,9 @@ class DocCardUpload extends React.Component {
   /**
    * UI EVENTS
    * - triggerAddFile
+   * - triggerNotRequiredFile
+   * - triggerEditFile
    * - triggerDeleteFile
-   * - triggerChangeFile
   */
   triggerAddFile(e) {
     e && e.preventDefault();
@@ -62,6 +64,21 @@ class DocCardUpload extends React.Component {
       childrenProps: {
         ...this.props,
         notRequired: true,
+        onChange: () => {
+          this.props.onChange && this.props.onChange();
+        }
+      }
+    });
+  }
+
+  triggerEditFile(e) {
+    e && e.preventDefault();
+
+    modal.toggleModal(true, {
+      children: DocModal,
+      childrenProps: {
+        ...this.props,
+        notRequired: !!this.props.reason,
         onChange: () => {
           this.props.onChange && this.props.onChange();
         }
@@ -100,8 +117,8 @@ class DocCardUpload extends React.Component {
           <ul>
             {buttons.update &&
               <li>
-                <button onClick={this.triggerAddFile} className="c-button -small -primary">
-                  {this.props.intl.formatMessage({ id: 'update-file' })}
+                <button onClick={this.triggerEditFile} className="c-button -small -primary">
+                  {this.props.intl.formatMessage({ id: 'edit' })}
                 </button>
               </li>
             }

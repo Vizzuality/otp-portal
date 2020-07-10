@@ -1,16 +1,80 @@
-$sidebar-width: 600px;
+$sidebar-width: 700px;
 
 .c-sidebar {
-  width: $sidebar-width;
+  width: 0;
   z-index: 2;
   flex-shrink: 0;
-  background: rgba($color-black, .04);
+  background: #f7f6ed;
   box-shadow: 0 0 5px rgba($color-black, .25);
+  transform: translate(-95%, 0);
+
+
+  .sidebar--button {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    z-index: 10;
+    width: 50px;
+    height: 100%;
+    padding: 0;
+    color: $color-white;
+    fill: $color-white;
+    background: $color-primary;
+    border: none;
+    outline: none;
+
+    &:hover {
+      background: lighten($color-primary, 10%);
+    }
+
+
+    .sidebar--button-name {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      white-space: nowrap;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%) rotate(-90deg);
+
+      > * {
+        margin-left: $space-1 * 2;
+
+        &:first-child { margin-left: 0; }
+      }
+    }
+  }
+
+  &.-open {
+    width: $sidebar-width;
+    transform: translate(0, 0);
+
+    .sidebar--button {
+      width: 32px;
+      height: 32px;
+      top: $space-1 * 3.5;
+      right: $space-1 * 4;
+      left: auto;
+      border-radius: 50%;
+
+      .sidebar--button-name {
+        position: relative;
+        top: 0%;
+        left: 0%;
+        transform: translate(0,0) rotate(0deg);
+      }
+    }
+  }
 
   &.-fluid {
     position: absolute;
     top: 0;
     left: 0;
-    width: 300px;
+
+    &.-open {
+      width: 300px;
+    }
   }
 }

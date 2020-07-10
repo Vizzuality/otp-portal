@@ -8,6 +8,16 @@
     top: $space-1;
     right: $space-1;
     z-index: 2;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: darken($color-white, 5%);
+    }
   }
 }
 
@@ -53,5 +63,10 @@
       padding: 0 0 $space-1 * 1.5 $space-1;
       vertical-align: baseline;
     }
+  }
+
+  .layer-popup--list {
+    margin: 0;
+    padding-left: $space-1 * 2;
   }
 }

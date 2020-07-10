@@ -2,53 +2,36 @@ import fetch from 'isomorphic-fetch';
 
 const SAWMILL_MAP_LOCATION = 'SAWMILL_MAP_LOCATION';
 const SAWMILL_UNMOUNT_MAP = 'SAWMILL_UNMOUNT_MAP';
-const SAWMILL_SET_MARKER_MODE = 'SAWMILL_SET_MARKER_MODE';
-const SAWMILL_SET_MARKER_LOCATION = 'SAWMILL_SET_MARKER_LOCATION';
+
 const GET_SAWMILL_LOCATION_SUCCESS = 'GET_SAWMILL_LOCATION_SUCCESS';
 const GET_SAWMILL_LOCATION_LOADING = 'GET_SAWMILL_LOCATION_LOADING';
 const GET_SAWMILL_LOCATION_ERROR = 'GET_SAWMILL_LOCATION_ERROR';
 
 const initialState = {
-  mapOptions: { // TODO : transfer zoom and center
+  viewport: { // TODO : transfer zoom and center
     zoom: 5,
-    center: {
-      lat: 0,
-      lng: 18
-    }
+    latitude: 0,
+    longitude: 18
   },
   loading: false,
   error: false,
-  markerMode: false,
-  lngLat: {},
-  sawmillStartGeojson: {}
+  sawmill: {}
 };
 
 /* Reducer */
 export default function (state = initialState, action) {
   switch (action.type) {
     case SAWMILL_MAP_LOCATION: {
-      return Object.assign({}, state, { mapOptions: { ...state.mapOptions, ...action.payload } });
+      return Object.assign({}, state, { viewport: { ...state.viewport, ...action.payload } });
     }
 
     case SAWMILL_UNMOUNT_MAP: {
       return Object.assign({}, state, { ...initialState });
     }
 
-    case SAWMILL_SET_MARKER_MODE: {
-      return Object.assign({}, state, { markerMode: action.payload });
-    }
-
-    case SAWMILL_SET_MARKER_LOCATION: {
-      // const mapOptions = Object.assign({}, state.mapOptions, {
-      //   center: action.payload
-      // }); // TODO CENTER
-
-      return Object.assign({}, state, { lngLat: action.payload });
-    }
-
     case GET_SAWMILL_LOCATION_SUCCESS: {
       return Object.assign({}, state, {
-        sawmillStartGeojson: action.payload,
+        sawmill: action.payload,
         loading: false,
         error: false
       });
@@ -85,7 +68,7 @@ export function getSawMillLocationById(id) {
     // Waiting for fetch from server -> Dispatch loading
     dispatch({ type: GET_SAWMILL_LOCATION_LOADING });
 
-    return fetch(`${process.env.OTP_API}/sawmills/${id}?format=geojson`, {
+    return fetch(`${process.env.OTP_API}/sawmills/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -110,24 +93,6 @@ export function getSawMillLocationById(id) {
           payload: err.message
         });
       });
-  };
-}
-
-
-export function setMarkerMode(mode) {
-  return (dispatch) => {
-    dispatch({
-      type: SAWMILL_SET_MARKER_MODE,
-      payload: mode
-    });
-  };
-}
-
-
-export function setMarkerLocation(payload) {
-  return {
-    type: SAWMILL_SET_MARKER_LOCATION,
-    payload
   };
 }
 

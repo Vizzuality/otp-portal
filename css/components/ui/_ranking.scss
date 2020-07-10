@@ -102,11 +102,24 @@
 
   .certifications-td {
     p {
+      white-space: nowrap;
       line-height: 1;
       margin: 5px 0 0;
       font-size: 10px;
 
       &:first-child { margin: 0;}
+    }
+  }
+}
+
+.c-observations-td {
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+
     }
   }
 }

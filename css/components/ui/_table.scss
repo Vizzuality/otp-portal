@@ -4,7 +4,7 @@
   flex-direction: column;
   flex: 1;
 
-  .report-item {
+  .report-item, .evidence-item {
     display: flex;
     position: relative;
     background: none;
@@ -12,20 +12,6 @@
     border: 1px solid rgba($color-text-1, 0.8);
     cursor: pointer;
     padding: 5px;
-
-    &::after {
-      content: '';
-      display: inline-block;
-      position: absolute;
-      top: 0;
-      right: 0;
-      transform: translate(50%, -50%) rotate(45deg);
-      width: 10px;
-      height: 10px;
-      background: $color-tertiary;
-      border-bottom: 1px solid rgba($color-text-1, 0.8);
-      cursor: default;
-    }
   }
 
   // Override
@@ -119,10 +105,20 @@
         .report-item-wrapper {
           display: inline-block;
         }
+      }
 
-        .report-item-text {
-          font-size: 48px;
-          line-height: 32px;
+      &.evidence {
+        .evidence-item-wrapper {
+          display: flex;
+
+          .evidence-item {
+            margin-left: $space-1;
+            flex-shrink: 0;
+
+            &:first-child {
+              margin-left: 0;
+            }
+          }
         }
       }
 
@@ -159,41 +155,11 @@
         }
       }
 
-      .evidence-link {
-        position: relative;
-        display: inline-block;
-        padding: 5px 20px;
-        border: 1px solid rgba($color-white, .5);
-        font-family: $font-family-proximanova;
-        font-size: $font-size-small;
-        color: rgba($color-text-2, .8);
-        text-transform: uppercase;
-        text-decoration: none;
+      &.status {
         white-space: normal;
-        letter-spacing: 1px;
 
-        &::after {
-          content: '';
-          display: inline-block;
-          position: absolute;
-          top: 0;
-          right: 0;
-          transform: translate(50%, -50%) rotate(45deg);
-          width: 10px;
-          height: 10px;
-          background: $color-green-1;
-          border-bottom: 1px solid rgba($color-white, .5);
-          cursor: default;
-        }
-
-        &:hover {
-          border: 1px solid rgba($color-white, .8);
-
-          color: $color-text-2;
-
-          &::after {
-            border-bottom: 1px solid rgba($color-white, .8);
-          }
+        button {
+          margin-left: 5px;
         }
       }
 

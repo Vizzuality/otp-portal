@@ -12,70 +12,55 @@ import { intlShape } from 'react-intl';
 
 // Selectors
 import { getParsedDocumentation } from 'selectors/countries-detail/documentation';
+import { getParsedObservations } from 'selectors/countries-detail/observations';
+
+// Constants
+import { TABS_COUNTRIES_DETAIL } from 'constants/countries-detail';
 
 // Redux
 import { connect } from 'react-redux';
-import { setUser } from 'modules/user';
-import { setRouter } from 'modules/router';
-import { setLanguage } from 'modules/language';
-import { getOperators } from 'modules/operators';
-import { getCountry } from 'modules/countries-detail';
+import { getCountry, getCountryObservations, getCountryLinks, getCountryVPAs } from 'modules/countries-detail';
 import withTracker from 'components/layout/with-tracker';
 
 // Components
 import Layout from 'components/layout/layout';
 import StaticHeader from 'components/ui/static-header';
+import Tabs from 'components/ui/tabs';
 import Spinner from 'components/ui/spinner';
 
+import CountriesDetailOverview from 'components/countries-detail/overview';
 import CountriesDetailDocumentation from 'components/countries-detail/documentation';
+import CountriesDetailObservations from 'components/countries-detail/observations';
 
 class CountriesDetail extends React.Component {
-  static async getInitialProps({ req, asPath, pathname, query, store, isServer }) {
-    const url = { asPath, pathname, query };
-    const { operators } = store.getState();
-    let user = null;
-    let lang = 'en';
-
-    if (isServer) {
-      lang = req.locale.language;
-      user = req.session ? req.session.user : {};
-    } else {
-      lang = store.getState().language;
-      user = store.getState().user;
-    }
-
-    store.dispatch(setLanguage(lang));
-    store.dispatch(setUser(user));
-    store.dispatch(setRouter(url));
-
-    if (!operators.data.length) {
-      await store.dispatch(getOperators());
-    }
-
+  static async getInitialProps({ url, store }) {
     await store.dispatch(getCountry(url.query.id));
+    await store.dispatch(getCountryObservations(url.query.id));
+    await store.dispatch(getCountryLinks(url.query.id));
+    await store.dispatch(getCountryVPAs(url.query.id));
 
-    return { isServer, url };
+    return { url };
   }
 
-  /**
-   * COMPONENT LIFECYCLE
-  */
+  // /**
+  //  * COMPONENT LIFECYCLE
+  // */
   componentDidMount() {
     // Set discalimer
-    if (!Cookies.get('country-detail.disclaimer')) {
-      toastr.info(
-        'Info',
-        this.props.intl.formatMessage({ id: 'country-detail.disclaimer' }),
-        {
-          className: '-disclaimer',
-          position: 'bottom-right',
-          timeOut: 15000,
-          onCloseButtonClick: () => {
-            Cookies.set('country-detail.disclaimer', true);
-          }
-        }
-      );
-    }
+    // if (!Cookies.get('country-detail.disclaimer')) {
+    //   toastr.info(
+    //     'Info',
+    //     this.props.intl.formatMessage({ id: 'country-detail.disclaimer' }),
+    //     {
+    //       className: '-disclaimer',
+    //       position: 'bottom-right',
+    //       timeOut: 15000,
+    //       onCloseButtonClick: () => {
+    //         Cookies.set('country-detail.disclaimer', true);
+    //       }
+    //     }
+    //   );
+    // }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -87,9 +72,23 @@ class CountriesDetail extends React.Component {
     }
   }
 
+  /**
+   * HELPERS
+   * - getTabOptions
+  */
+  getTabOptions() {
+    return TABS_COUNTRIES_DETAIL.map((tab) => {
+      return {
+        ...tab,
+        label: this.props.intl.formatMessage({ id: tab.label })
+      };
+    });
+  }
 
   render() {
-    const { url, countriesDetail, countryDocumentation } = this.props;
+    const { url, countriesDetail, countryDocumentation, countryObservations } = this.props;
+    const id = url.query.id;
+    const tab = url.query.tab || 'overview';
 
     return (
       <Layout
@@ -109,11 +108,43 @@ class CountriesDetail extends React.Component {
           background="/static/images/static-header/bg-operator-detail.jpg"
         />
 
-        <CountriesDetailDocumentation
-          countriesDetail={countriesDetail}
-          countryDocumentation={countryDocumentation}
-          url={url}
+        <Tabs
+          href={{
+            pathname: url.pathname,
+            query: { id },
+            as: `/countries/${id}`
+          }}
+          options={this.getTabOptions()}
+          defaultSelected={tab}
+          selected={tab}
         />
+
+        {tab === 'overview' &&
+          <CountriesDetailOverview
+            countriesDetail={countriesDetail}
+            countryDocumentation={countryDocumentation}
+            countryObservations={countryObservations}
+            url={url}
+          />
+        }
+
+
+        {tab === 'documentation' &&
+          <CountriesDetailDocumentation
+            countriesDetail={countriesDetail}
+            countryDocumentation={countryDocumentation}
+            url={url}
+          />
+        }
+
+        {tab === 'observations' &&
+          <CountriesDetailObservations
+            countriesDetail={countriesDetail}
+            countryObservations={countryObservations}
+            url={url}
+          />
+        }
+
       </Layout>
     );
   }
@@ -122,7 +153,12 @@ class CountriesDetail extends React.Component {
 
 CountriesDetail.propTypes = {
   url: PropTypes.object.isRequired,
-  intl: intlShape.isRequired
+  countriesDetail: PropTypes.shape({}).isRequired,
+  countryDocumentation: PropTypes.shape({}).isRequired,
+  countryObservations: PropTypes.shape({}).isRequired,
+  intl: intlShape.isRequired,
+
+  getCountry: PropTypes.func.isRequired
 };
 
 export default withTracker(withIntl(connect(
@@ -130,7 +166,8 @@ export default withTracker(withIntl(connect(
   state => ({
     user: state.user,
     countriesDetail: state.countriesDetail,
-    countryDocumentation: getParsedDocumentation(state)
+    countryDocumentation: getParsedDocumentation(state),
+    countryObservations: getParsedObservations(state)
   }),
   { getCountry }
 )(CountriesDetail)));

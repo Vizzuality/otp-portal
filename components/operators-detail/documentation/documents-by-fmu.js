@@ -54,7 +54,7 @@ class DocumentsByFMU extends React.Component {
 
 
                 <ul className="c-doc-gallery accordion-content">
-                  {sortBy(Object.keys(groupedByCategory)).map(category => (
+                  {Object.keys(groupedByCategory).map(category => (
                     <li
                       key={category}
                       className="doc-gallery-item"

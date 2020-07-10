@@ -44,8 +44,13 @@ class Header extends React.Component {
           <div className="header-container">
             <h1 className="header-logo">
               <Link href="/">
-                <a>Open Timber Portal</a>
+                <a>
+                  Open Timber Portal
+                </a>
               </Link>
+              {process.env.ENV === 'staging' &&
+                <span className="header-logo-staging">Staging</span>
+              }
             </h1>
             <nav className="header-nav">
               <NavigationList url={this.props.url} className="header-nav-list" />

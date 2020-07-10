@@ -93,6 +93,16 @@ class NavigationList extends React.Component {
             </a>
           </Link>
         </li>
+        {hideActive &&
+          <li>
+            <Link href="/newsletter">
+              <a className={!hideActive ? this.setActive(['/newsletter']) : ''}>
+                {this.props.intl.formatMessage({ id: 'newsletter' })}
+              </a>
+            </Link>
+          </li>
+        }
+
       </ul>
     );
   }

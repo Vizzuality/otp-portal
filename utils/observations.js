@@ -15,6 +15,18 @@ const HELPERS_OBS = {
     return groupBy(data, 'category');
   },
 
+  getGroupedByFMU(data) {
+    const groupedByFmu = groupBy(
+      data.filter(d => !!d.fmu),
+      (d) => {
+        return d.fmu.name;
+      }
+    );
+
+    return groupedByFmu;
+  },
+
+
   getGroupedBySeverity(data, raw) {
     const grouped = groupBy(data, 'severity');
     if (raw) {

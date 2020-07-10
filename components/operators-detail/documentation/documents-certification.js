@@ -43,6 +43,7 @@ function DocumentsCertification(props) {
             <div className="columns small-12">
               <DocCard
                 {...doc}
+                title={intl.formatMessage({ id: 'operator-detail.license' })}
                 properties={{
                   type: 'operator',
                   id

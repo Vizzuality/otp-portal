@@ -16,7 +16,7 @@ function decode(obj) {
 
 function parseSelectOptions(options) {
   return options.map(o => (
-    { label: o.name, value: o.id }
+    { ...o, label: o.name, value: o.id }
   ));
 }
 

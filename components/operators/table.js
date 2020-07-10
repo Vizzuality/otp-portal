@@ -8,62 +8,14 @@ import Link from 'next/link';
 // Intl
 import { injectIntl, intlShape } from 'react-intl';
 
-// Utils
-import { HELPERS_DOC } from 'utils/documentation';
-
 import Spinner from 'components/ui/spinner';
 import Icon from 'components/ui/icon';
-
-// Chart
-import OperatorsRanking from 'components/operators/ranking';
-import OperatorsCertificationsTd from 'components/operators/certificationsTd';
 
 class OperatorsTable extends React.Component {
   state = {
     sortColumn: 'documentation',
     sortDirection: -1,
-    table: [],
-    max: null
-  }
-
-  componentDidMount() {
-    const { operators } = this.props;
-
-    if (operators.length) {
-      this.setState({
-        sortColumn: this.state.sortColumn || 'documentation',
-        sortDirection: this.state.sortDirection || -1,
-        table: operators.map(o => ({
-          id: o.id,
-          name: o.name,
-          certification: <OperatorsCertificationsTd fmus={o.fmus} />,
-          score: o.score || 0,
-          obs_per_visit: o['obs-per-visit'] || 0,
-          documentation: HELPERS_DOC.getPercentage(o),
-          fmus: o.fmus ? o.fmus.length : 0
-        })),
-        max: Math.max(...operators.map(o => o.observations.length))
-      });
-    }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.operators.length !== this.props.operators.length) {
-      this.setState({
-        sortColumn: this.state.sortColumn || 'documentation',
-        sortDirection: this.state.sortDirection || -1,
-        table: nextProps.operators.map(o => ({
-          id: o.id,
-          name: o.name,
-          certification: <OperatorsCertificationsTd fmus={o.fmus} />,
-          score: o.score || 0,
-          obs_per_visit: o['obs-per-visit'] || 0,
-          documentation: HELPERS_DOC.getPercentage(o),
-          fmus: o.fmus ? o.fmus.length : 0
-        })),
-        max: Math.max(...nextProps.operators.map(o => o.observations.length))
-      });
-    }
+    table: []
   }
 
   sortBy = (column) => {
@@ -74,7 +26,7 @@ class OperatorsTable extends React.Component {
   };
 
   render() {
-    const { operators } = this.props;
+    const { operators, operatorsTable } = this.props;
     const { sortColumn, sortDirection, table } = this.state;
 
     if (!operators.loading) {
@@ -83,15 +35,14 @@ class OperatorsTable extends React.Component {
           <table>
             <thead>
               <tr>
-                <th />
                 <th
                   className="td-documentation -ta-center -sort"
                   onClick={() => {
-                    this.sortBy("documentation");
+                    this.sortBy('documentation');
                   }}
                 >
                   {this.props.intl.formatMessage({
-                    id: "operators.table.upload_docs"
+                    id: 'operators.table.upload_docs'
                   })}
                   {sortDirection === -1 && (
                     <Icon name="icon-arrow-down" className="-tiny" />
@@ -100,56 +51,53 @@ class OperatorsTable extends React.Component {
                     <Icon name="icon-arrow-up" className="-tiny" />
                   )}
                 </th>
+
                 <th className="-ta-left">
                   {this.props.intl.formatMessage({
-                    id: "operators.table.name"
+                    id: 'operators.table.name'
                   })}
                 </th>
+
+                <th className="-ta-left -contextual">
+                  {this.props.intl.formatMessage({
+                    id: 'country'
+                  })}
+                </th>
+
 
                 {/* Other styles */}
                 <th className="-ta-center -contextual">
                   {this.props.intl.formatMessage({
-                    id: "operators.table.obs_visit"
+                    id: 'operators.table.obs_visit'
                   })}
                 </th>
                 <th className="-contextual">
                   {this.props.intl.formatMessage({
-                    id: "operators.table.fmus"
+                    id: 'operators.table.fmus'
                   })}
                 </th>
                 <th className="-contextual">
                   {this.props.intl.formatMessage({
-                    id: "operators.table.certification"
+                    id: 'operators.table.certification'
                   })}
                 </th>
               </tr>
             </thead>
 
             <tbody>
-              {sortBy(table, o => sortDirection * o[sortColumn]).map((r, i) => (
+              {sortBy(operatorsTable, o => sortDirection * o[sortColumn]).map((r, i) => (
                 <tr key={`${r.id}-ranking`}>
-                  {i === 0 && (
-                    <td className="-ta-center" rowSpan={table.length}>
-                      <OperatorsRanking
-                        key={`update-${r.id}`}
-                        data={table.map(o => ({
-                          id: o.id,
-                          value: parseInt(o.documentation, 10)
-                        }))}
-                        sortDirection={sortDirection}
-                      />
-                    </td>
-                  )}
                   <td
                     id={`td-documentation-${r.id}`}
                     className="td-documentation -ta-left"
                   >
                     {r.documentation}%
                   </td>
+
                   <td className="-ta-left">
                     <Link
                       href={{
-                        pathname: "/operators-detail",
+                        pathname: '/operators-detail',
                         query: { id: r.id }
                       }}
                       as={`/operators/${r.id}`}
@@ -157,13 +105,13 @@ class OperatorsTable extends React.Component {
                       <a>{r.name}</a>
                     </Link>
                   </td>
-                  <td className="-ta-center">
-                    {!!r.obs_per_visit && r.obs_per_visit}
-                    {!r.obs_per_visit && (
-                      <div className="stoplight-dot -state-0}" />
-                    )}
+
+                  <td className="-ta-left">
+                    {r.country}
                   </td>
-                  <td className="-ta-right"> {r.fmus} </td>
+
+                  <td className="-ta-center">{r.observations}</td>
+                  <td className="-ta-right"> {r.fmusLenght} </td>
                   <td className="-ta-right">{r.certification}</td>
                 </tr>
               ))}
@@ -178,6 +126,7 @@ class OperatorsTable extends React.Component {
 
 OperatorsTable.propTypes = {
   operators: PropTypes.array.isRequired,
+  operatorsTable: PropTypes.array.isRequired,
   intl: intlShape.isRequired
 };
 

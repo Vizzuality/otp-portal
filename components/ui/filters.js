@@ -1,12 +1,31 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import isEqual from 'lodash/isEqual';
 
 import { injectIntl, intlShape } from 'react-intl';
 import Select from 'react-select';
 
 
 class Filters extends React.Component {
+
+  componentDidUpdate(prevProps) {
+    const { options, filters } = this.props;
+    const { options: prevOptions } = prevProps;
+
+    if (!isEqual(options, prevOptions)) {
+      this.props.filtersRefs.map((f) => {
+        const value = options[f.key] ?
+          options[f.key].filter(opt => filters[f.key] ?
+            filters[f.key].includes(opt.value) :
+            false) :
+          [];
+
+        this.setFilter(value, f.key);
+      });
+    }
+  }
+
   setFilter(selected, key) {
     const filter = {};
     filter[key] = selected.map((opt) => {
@@ -15,7 +34,7 @@ class Filters extends React.Component {
     });
 
     this.props.setFilters(filter);
-    this.props.logFilter(key, filter[key]);
+    // this.props.logFilter(key, filter[key]);
   }
 
 
@@ -29,6 +48,16 @@ class Filters extends React.Component {
           false) :
         [];
 
+      let opts = options[f.key];
+
+      if (f.key === 'validation_status') {
+        opts = opts.map(o => ({
+          ...o,
+          label: this.props.intl.formatMessage({ id: `observations.status-${o.id}` }),
+          name: this.props.intl.formatMessage({ id: `observations.status-${o.id}` })
+        }));
+      }
+
       return (
         <div key={f.key} className="field">
           <div className="c-select">
@@ -38,12 +67,14 @@ class Filters extends React.Component {
             <Select
               instanceId={f.key}
               name={f.key}
-              options={options[f.key]}
+              options={opts}
               multi
               className={value.length ? '-filled' : ''}
               value={value}
               placeholder={this.props.intl.formatMessage({ id: `filter.${f.key}.placeholder` })}
-              onChange={selected => this.setFilter(selected, f.key)}
+              onChange={selected => {
+                this.setFilter(selected, f.key);
+              }}
             />
           </div>
         </div>

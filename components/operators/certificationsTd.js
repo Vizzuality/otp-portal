@@ -15,11 +15,12 @@ class CertificationsTd extends React.Component {
     const fsc = fmus.filter(f => f['certification-fsc']).length;
     const olb = fmus.filter(f => f['certification-olb']).length;
     const pefc = fmus.filter(f => f['certification-pefc']).length;
-    const vlc = fmus.filter(f => f['certification-vlc']).length;
-    const vlo = fmus.filter(f => f['certification-vlo']).length;
-    const tltv = fmus.filter(f => f['certification-tltv']).length;
+    const pafc = fmus.filter(f => f['certification-pafc']).length;
+    const fsccw = fmus.filter(f => f['certification-fsc-cw']).length;
+    const tlv = fmus.filter(f => f['certification-tlv']).length;
+    const ls = fmus.filter(f => f['certification-ls']).length;
 
-    if (!fsc && !olb && !pefc) {
+    if (!fsc && !olb && !pefc && pafc && fsccw && tlv && ls) {
       return (
         <div className="certifications-td">
           <p>-</p>
@@ -32,9 +33,10 @@ class CertificationsTd extends React.Component {
         {!!fsc && <p>FSC ({fsc})</p>}
         {!!olb && <p>OLB ({olb})</p>}
         {!!pefc && <p>PEFC ({pefc})</p>}
-        {!!vlc && <p>VLC ({vlc})</p>}
-        {!!vlo && <p>VLO ({vlo})</p>}
-        {!!tltv && <p>TLTV ({tltv})</p>}
+        {!!pafc && <p>PAFC ({pafc})</p>}
+        {!!fsccw && <p>FSC-CW ({fsccw})</p>}
+        {!!tlv && <p>TLV ({tlv})</p>}
+        {!!ls && <p>LS ({ls})</p>}
       </div>
     );
   }

@@ -146,7 +146,7 @@ const MAP_LAYERS_OPERATORS = [
     source: {
       type: 'geojson',
       data: {
-        url: `${process.env.OTP_API}/fmus?country_ids=188,53&format=geojson`,
+        url: `${process.env.OTP_API}/fmus?country_ids=${process.env.OTP_COUNTRIES_IDS.join(',')}&format=geojson`,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -321,7 +321,7 @@ const MAP_LAYERS_OPERATORS = [
   //   provider: 'geojson',
   //   source: {
   //     type: 'geojson',
-  //     data: `${process.env.OTP_API}/harvestable_areas?country_ids=188,53`
+  //     data: `${process.env.OTP_API}/harvestable_areas?country_ids=${process.env.OTP_COUNTRIES_IDS.join(',')}`
   //     data: `https://simbiotica.carto.com/api/v2/sql?q=${encodeURIComponent('SELECT * FROM harvestable_areas')}&format=geojson`
   //   },
   //   layers: [{

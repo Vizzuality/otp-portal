@@ -34,7 +34,7 @@ function Gallery1(props) {
                 description={tutorial.description}
                 link={{
                   label: props.intl.formatMessage({ id: 'help.tabs.howto.post1.link.label' }),
-                  href: `/help/how-otp-works?article=tutorial-article-${tutorial.id}`
+                  href: `/help/tutorials?article=tutorial-article-${tutorial.id}`
                 }}
               />
             </div>

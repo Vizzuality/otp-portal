@@ -31,10 +31,13 @@ class Field extends React.Component {
   validate() {
     if (this.child.triggerValidate) this.child.triggerValidate();
 
+
+
     // React intl forces to do this...
     // I'm starting to think that our inputs are not very well done...
-    if (this.child.refs.wrappedInstance && this.child.refs.wrappedInstance.triggerValidate) {
-      this.child.refs.wrappedInstance.triggerValidate();
+    if (this.child.getWrappedInstance) {
+      const wrapper = this.child.getWrappedInstance();
+      if (wrapper) wrapper.triggerValidate();
     }
   }
 
@@ -72,7 +75,7 @@ class Field extends React.Component {
           onValid={this.onValid}
         />
 
-        {error &&
+        {error && typeof error === 'function' &&
           error.map((err, i) => {
             if (err) {
               return (

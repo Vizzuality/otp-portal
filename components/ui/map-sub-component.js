@@ -52,7 +52,7 @@ class MapSubComponent extends React.Component {
               // Options
               transformRequest={(url, resourceType) => {
                 if (
-                  resourceType == 'Source' &&
+                  resourceType === 'Source' &&
                   url.startsWith(process.env.OTP_API)
                 ) {
                   return {

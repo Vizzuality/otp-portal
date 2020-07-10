@@ -1,4 +1,141 @@
+const FMU_LEGEND = [
+  {
+    name: 'Cameroon',
+    iso: 'CMR',
+    color: '#007A5E',
+    items: [
+      { name: 'ventes_de_coupe', color: '#8BC2B5' },
+      { name: 'ufa', color: '#007A5E' },
+      { name: 'communal', color: '#00382B' }
+    ]
+  },
+  {
+    name: 'Central African Republic',
+    iso: 'CAF',
+    color: '#e9D400'
+  },
+  {
+    name: 'Congo',
+    iso: 'COG',
+    color: '#7B287D'
+  },
+  {
+    name: 'Democratic Republic of the Congo',
+    iso: 'COD',
+    color: '#5ca2d1'
+  },
+  {
+    name: 'Gabon',
+    iso: 'GAB',
+    color: '#e95800',
+    items: [
+      { name: 'CPAET', color: '#e95800' },
+      { name: 'CFAD', color: '#e9A600' }
+    ]
+  }
+];
+
 export const LAYERS = [
+  {
+    id: 'glad',
+    name: 'GLAD alerts',
+    config: {
+      type: 'raster',
+      source: {
+        tiles: [
+          'https://tiles.globalforestwatch.org/glad_prod/tiles/{z}/{x}/{y}.png'
+        ],
+        minzoom: 2,
+        maxzoom: 12
+      }
+    },
+    legendConfig: {
+      enabled: true,
+      type: 'basic',
+      items: [
+        {
+          name: 'Alerts',
+          color: '#F00'
+        },
+        {
+          name: 'Recent alerts (last 31 days)',
+          color: '#840000'
+        }
+      ]
+    },
+    decodeConfig: [
+      {
+        default: '2015-01-01',
+        key: 'startDate',
+        required: true
+      },
+      {
+        default: '2020-01-30',
+        key: 'endDate',
+        required: true
+      },
+      {
+        default: 0,
+        key: 'confirmedOnly',
+        required: true
+      }
+    ],
+    decodeFunction: `
+      // values for creating power scale, domain (input), and range (output)
+      float confidenceValue = 0.;
+      if (confirmedOnly > 0.) {
+        confidenceValue = 200.;
+      }
+      float day = color.r * 255. * 255. + (color.g * 255.);
+      float confidence = color.b * 255.;
+      if (
+        day > 0. &&
+        day >= startDayIndex &&
+        day <= endDayIndex &&
+        confidence >= confidenceValue
+      ) {
+        // get intensity
+        float intensity = mod(confidence, 100.) * 50.;
+        if (intensity > 255.) {
+          intensity = 255.;
+        }
+        if (day >= numberOfDays - 31. && day <= numberOfDays) {
+          color.r = 132. / 255.;
+          color.g = 0. / 255.;
+          color.b = 0.;
+          alpha = intensity / 255.;
+        } else {
+          color.r = 255. / 255.;
+          color.g = 0. / 255.;
+          color.b = 0. / 255.;
+          alpha = intensity / 255.;
+        }
+      } else {
+        alpha = 0.;
+      }
+    `,
+    timelineConfig: {
+      step: 7,
+      speed: 100,
+      interval: 'days',
+      dateFormat: 'YYYY-MM-DD',
+      trimEndDate: '{maxDate}',
+      maxDate: '{maxDate}',
+      minDate: '2015-01-01',
+      canPlay: true,
+      railStyle: {
+        background: '#DDD'
+      },
+      trackStyle: [
+        {
+          background: '#FF0000'
+        },
+        {
+          background: '#CC0000'
+        }
+      ]
+    }
+  },
   {
     id: 'gain',
     name: 'Tree cover gain',
@@ -100,130 +237,462 @@ export const LAYERS = [
     `
   },
   {
-    id: 'glad',
-    name: 'GLAD alerts',
-    config: {
-      type: 'raster',
-      source: {
-        tiles: [
-          'https://tiles.globalforestwatch.org/glad_prod/tiles/{z}/{x}/{y}.png'
-        ],
-        minzoom: 2,
-        maxzoom: 12
-      }
-    },
-    legendConfig: {
-      enabled: true
-    },
-    decodeConfig: [
-      {
-        default: '2015-01-01',
-        key: 'startDate',
-        required: true
-      },
-      {
-        default: '2020-01-30',
-        key: 'endDate',
-        required: true,
-        url: 'https://production-api.globalforestwatch.org/v1/glad-alerts/latest'
-      },
-      {
-        default: 1,
-        key: 'confirmedOnly',
-        required: true
-      }
-    ],
-    decodeFunction: `
-      // values for creating power scale, domain (input), and range (output)
-      float confidenceValue = 0.;
-      if (confirmedOnly > 0.) {
-        confidenceValue = 200.;
-      }
-      float day = color.r * 255. * 255. + (color.g * 255.);
-      float confidence = color.b * 255.;
-      if (
-        day > 0. &&
-        day >= startDayIndex &&
-        day <= endDayIndex &&
-        confidence >= confidenceValue
-      ) {
-        // get intensity
-        float intensity = mod(confidence, 100.) * 50.;
-        if (intensity > 255.) {
-          intensity = 255.;
-        }
-        if (day >= numberOfDays - 7. && day <= numberOfDays) {
-          color.r = 255. / 255.;
-          color.g = 255. / 255.;
-          color.b = 0.;
-          alpha = intensity / 255.;
-        } else {
-          color.r = 255. / 255.;
-          color.g = 0. / 255.;
-          color.b = 0. / 255.;
-          alpha = intensity / 255.;
-        }
-      } else {
-        alpha = 0.;
-      }
-    `,
-    timelineConfig: {
-      step: 7,
-      speed: 100,
-      interval: 'days',
-      dateFormat: 'YYYY-MM-DD',
-      trimEndDate: '2020-01-30',
-      maxDate: '2020-01-30',
-      minDate: '2015-01-01',
-      canPlay: true,
-      railStyle: {
-        background: '#DDD'
-      },
-      trackStyle: [
-        {
-          background: '#FF0000'
-        },
-        {
-          background: '#CC0000'
-        }
-      ]
-    }
-
-  },
-  {
-    id: 'fmus',
-    name: 'Forest managment units',
+    id: 'aac-cog',
+    name: 'aac',
+    iso: 'COG',
     config: {
       type: 'geojson',
       source: {
         type: 'geojson',
-        data: `${process.env.OTP_API}/fmus?country_ids=188,53&operator_ids={operator_id}&format=geojson`
+        provider: {
+          type: 'aac-cog',
+          url: 'https://opendata.arcgis.com/datasets/0c31460808d84dfe806127a25fd0de62_29.geojson'
+        }
       },
       render: {
         layers: [
           {
             type: 'fill',
-            source: 'fmus',
+            paint: {
+              'fill-color': '#CCCCCC',
+              'fill-opacity': 0.5
+            },
+            filter: [
+              'all',
+              ['in', ['get', 'num_con'], ['literal', '{fmuNames}']]
+            ]
+          },
+          {
+            type: 'line',
+            paint: {
+              'line-color': '#CCCCCC',
+              'line-opacity': 0.5
+            },
+            filter: [
+              'all',
+              ['in', ['get', 'num_con'], ['literal', '{fmuNames}']]
+            ]
+          }
+        ]
+      }
+    },
+    paramsConfig: [
+      { key: 'fmuNames', default: [], required: true }
+    ],
+    legendConfig: {
+      type: 'basic',
+      items: [
+        { name: 'aac', color: '#CCCCCC' }
+      ]
+    },
+    interactionConfig: {
+      enabled: true
+    }
+  },
+  {
+    id: 'aac-cod',
+    name: 'aac',
+    iso: 'COD',
+    config: {
+      type: 'geojson',
+      source: {
+        type: 'geojson',
+        provider: {
+          type: 'aac-cod',
+          url: 'https://opendata.arcgis.com/datasets/c60d5bf9e01c45c5ad79208803819db1_30.geojson'
+        }
+      },
+      render: {
+        layers: [
+          {
+            type: 'fill',
+            paint: {
+              'fill-color': '#CCCCCC',
+              'fill-opacity': 0.5
+            },
+            filter: [
+              'all',
+              ['in', ['get', 'num_ccf'], ['literal', '{fmuNames}']]
+            ]
+          },
+          {
+            type: 'line',
+            paint: {
+              'line-color': '#CCCCCC',
+              'line-opacity': 0.5
+            },
+            filter: [
+              'all',
+              ['in', ['get', 'num_ccf'], ['literal', '{fmuNames}']]
+            ]
+          }
+        ]
+      }
+    },
+    paramsConfig: [
+      { key: 'fmuNames', default: [], required: true }
+    ],
+    legendConfig: {
+      type: 'basic',
+      items: [
+        { name: 'aac', color: '#CCCCCC' }
+      ]
+    },
+    interactionConfig: {
+      enabled: true
+    }
+  },
+  // {
+  //   id: 'aac-cmr',
+  //   name: 'aac',
+  //   iso: 'CMR',
+  //   config: {
+  //     type: 'geojson',
+  //     source: {
+  //       type: 'geojson',
+  //       provider: {
+  //         type: 'aac-cmr',
+  //         url: 'https://opendata.arcgis.com/datasets/951c6b559cc945afb96013361519305b_128.geojson'
+  //       }
+  //     },
+  //     render: {
+  //       layers: [
+  //         {
+  //           type: 'fill',
+  //           paint: {
+  //             'fill-color': '#CCCCCC',
+  //             'fill-opacity': 0.5
+  //           },
+  //           // filter: [
+  //           //   'all',
+  //           //   ['in', ['get', 'nom_ufe'], ['literal', '{fmuNames}']]
+  //           // ]
+  //         },
+  //         {
+  //           type: 'line',
+  //           paint: {
+  //             'line-color': '#CCCCCC',
+  //             'line-opacity': 0.5
+  //           },
+  //           // filter: [
+  //           //   'all',
+  //           //   ['in', ['get', 'nom_ufe'], ['literal', '{fmuNames}']]
+  //           // ]
+  //         }
+  //       ]
+  //     }
+  //   },
+  //   paramsConfig: [
+  //     { key: 'fmuNames', default: [], required: true }
+  //   ],
+  //   legendConfig: {
+  //     type: 'basic',
+  //     items: [
+  //       { name: 'aac', color: '#CCCCCC' }
+  //     ]
+  //   },
+  //   interactionConfig: {
+  //     enabled: true
+  //   }
+  // },
+  {
+    id: 'fmus',
+    name: 'Forest managment units',
+    config: {
+      type: 'vector',
+      source: {
+        type: 'vector',
+        tiles: [`${process.env.OTP_API}/fmus/tiles/{z}/{x}/{y}`],
+        promoteId: 'id'
+      },
+      render: {
+        layers: [
+          // {
+          //   type: 'fill',
+          //   'source-layer': 'layer0',
+          //   filter: [
+          //     'all',
+          //     ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']]
+          //   ],
+          //   paint: {
+          //     'fill-color': {
+          //       property: 'fmu_type_label',
+          //       type: 'categorical',
+          //       stops: [
+          //         ['ventes_de_coupe', '#e92000'],
+          //         ['ufa', '#e95800'],
+          //         ['communal', '#e9A600'],
+          //         ['PEA', '#e9D400'],
+          //         ['CPAET', '#e9E200'],
+          //         ['CFAD', '#e9FF00']
+          //       ],
+          //       default: '#e98300'
+          //     },
+          //     'fill-opacity': 0.9
+          //   }
+          // },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']],
+              ['==', ['get', 'iso3_fmu'], 'COD']
+            ],
+            paint: {
+              'fill-color': '#5ca2d1',
+              'fill-opacity': 0.9
+            }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']],
+              ['==', ['get', 'iso3_fmu'], 'COG']
+            ],
+            paint: {
+              'fill-color': '#7B287D',
+              'fill-opacity': 0.9
+            }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']],
+              ['==', ['get', 'iso3_fmu'], 'CMR']
+            ],
             paint: {
               'fill-color': {
                 property: 'fmu_type_label',
                 type: 'categorical',
                 stops: [
-                  ['ventes_de_coupe', '#e92000'],
-                  ['ufa', '#e95800'],
-                  ['communal', '#e9A600'],
-                  ['PEA', '#e9D400'],
-                  ['CPAET', '#e9E200'],
-                  ['CFAD', '#e9FF00']
+                  ['ventes_de_coupe', '#8BC2B5'],
+                  ['ufa', '#007A5E'],
+                  ['communal', '#00382B']
                 ],
-                default: '#e98300'
+                default: '#007A5E'
               },
               'fill-opacity': 0.9
             }
           },
           {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']],
+              ['==', ['get', 'iso3_fmu'], 'GAB']
+            ],
+            paint: {
+              'fill-color': {
+                property: 'fmu_type_label',
+                type: 'categorical',
+                stops: [
+                  ['CPAET', '#e95800'],
+                  ['CFAD', '#e9A600']
+                ],
+                default: '#e95800'
+              },
+
+              'fill-opacity': 0.9
+            }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']],
+              ['==', ['get', 'iso3_fmu'], 'CAF']
+            ],
+            paint: {
+              'fill-color': '#e9D400',
+              'fill-opacity': 0.9
+            }
+          },
+          {
             type: 'line',
-            source: 'fmus',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']]
+            ],
+            paint: {
+              'line-color': '#000000',
+              'line-opacity': [
+                'case',
+                ['boolean', ['feature-state', 'hover'], false],
+                1,
+                0.1
+              ],
+              'line-width': [
+                'case',
+                ['boolean', ['feature-state', 'hover'], false],
+                2,
+                1
+              ],
+              'line-dasharray': [3, 1]
+            }
+          }
+        ]
+      }
+    },
+    paramsConfig: [
+      { key: 'country_iso_codes', default: process.env.OTP_COUNTRIES, required: true }
+    ],
+    legendConfig: {
+      type: 'basic',
+      color: '#e98300',
+      items: process.env.OTP_COUNTRIES.map(iso => FMU_LEGEND.find(i => i.iso === iso))
+    },
+    interactionConfig: {
+      enable: true,
+      output: [
+        {
+          column: 'fmu_name',
+          label: 'name'
+        },
+        {
+          column: 'fmu_type_label',
+          label: 'type'
+        },
+        {
+          column: 'company_na',
+          label: 'operator'
+        }
+      ]
+    }
+  },
+  {
+    id: 'fmusdetail',
+    name: 'Forest managment units',
+    config: {
+      type: 'vector',
+      source: {
+        type: 'vector',
+        tiles: [`${process.env.OTP_API}/fmus/tiles/{z}/{x}/{y}`]
+      },
+      render: {
+        layers: [
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'iso3_fmu', 'COD'],
+              ['==', 'operator_id', '{operator_id}']
+            ],
+            paint: {
+              'fill-color': '#5ca2d1',
+              'fill-opacity': 0.9
+            }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'iso3_fmu', 'COG'],
+              ['==', 'operator_id', '{operator_id}']
+            ],
+            paint: {
+              'fill-color': '#7B287D',
+              'fill-opacity': 0.9
+            }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'iso3_fmu', 'CMR'],
+              ['==', 'operator_id', '{operator_id}']
+            ],
+            paint: {
+              'fill-color': {
+                property: 'fmu_type_label',
+                type: 'categorical',
+                stops: [
+                  ['ventes_de_coupe', '#8BC2B5'],
+                  ['ufa', '#007A5E'],
+                  ['communal', '#00382B']
+                ],
+                default: '#007A5E'
+              },
+              'fill-opacity': 0.9
+            }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'iso3_fmu', 'GAB'],
+              ['==', 'operator_id', '{operator_id}']
+            ],
+            paint: {
+              'fill-color': {
+                property: 'fmu_type_label',
+                type: 'categorical',
+                stops: [
+                  ['CPAET', '#e95800'],
+                  ['CFAD', '#e9A600']
+                ],
+                default: '#e95800'
+              },
+
+              'fill-opacity': 0.9
+            }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'iso3_fmu', 'CAF'],
+              ['==', 'operator_id', '{operator_id}']
+            ],
+            paint: {
+              'fill-color': '#e9D400',
+              'fill-opacity': 0.9
+            }
+          },
+          // {
+          //   type: 'fill',
+          //   'source-layer': 'layer0',
+          //   filter: [
+          //     'all',
+          //     ['==', 'operator_id', '{operator_id}'],
+          //     // ['in', ['get', 'iso3_fmu'], ['literal', '{country_iso_codes}']]
+          //   ],
+          //   paint: {
+          //     'fill-color': {
+          //       property: 'fmu_type_label',
+          //       type: 'categorical',
+          //       stops: [
+          //         ['ventes_de_coupe', '#e92000'],
+          //         ['ufa', '#e95800'],
+          //         ['communal', '#e9A600'],
+          //         ['PEA', '#e9D400'],
+          //         ['CPAET', '#e9E200'],
+          //         ['CFAD', '#e9FF00']
+          //       ],
+          //       default: '#e98300'
+          //     },
+          //     'fill-opacity': 0.9
+          //   }
+          // },
+          {
+            type: 'line',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'operator_id', '{operator_id}']
+            ],
             paint: {
               'line-color': '#000000',
               'line-opacity': 0.1
@@ -231,6 +700,7 @@ export const LAYERS = [
           },
           {
             type: 'line',
+            'source-layer': 'layer0',
             filter: [
               'all',
               ['==', 'id', '{clickId}']
@@ -241,7 +711,20 @@ export const LAYERS = [
             }
           },
           {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'id', '{clickId}']
+            ],
+            paint: {
+              'fill-color': '#333'
+            }
+          },
+
+          {
             type: 'line',
+            'source-layer': 'layer0',
             filter: [
               'all',
               ['==', 'id', '{hoverId}'],
@@ -252,50 +735,29 @@ export const LAYERS = [
               'line-opacity': 1,
               'line-width': 2
             }
+          },
+          {
+            type: 'fill',
+            'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['==', 'id', '{hoverId}'],
+              ['!=', 'id', '{clickId}']
+            ],
+            paint: {
+              'fill-color': '#333'
+            }
           }
+
         ]
       }
     },
     paramsConfig: [
-      { key: 'operator_id', default: '', required: false }
+      { key: 'operator_id', default: null, required: true }
     ],
-    legendConfig: {
-      type: 'basic',
-      color: '#e98300',
-      items: [
-        {
-          name: 'Central African Republic',
-          hideIcon: true,
-          items: [
-            { name: 'PEA', color: '#e9D400' }
-          ]
-        },
-        {
-          name: 'Gabon',
-          hideIcon: true,
-          items: [
-            { name: 'CPAET', color: '#e9F200' },
-            { name: 'CFAD', color: '#e9FF00' }
-          ]
-        }
-      ]
-    },
+    legendConfig: {},
     interactionConfig: {
-      enable: true,
-      output: [
-        {
-          column: 'fmu_name',
-          label: 'Name'
-        },
-        {
-          column: 'fmu_type_label',
-          label: 'Type'
-        },
-        {
-          column: 'company_na',
-          label: 'Producer'
-        }
-      ]
+      enable: true
     }
   },
   {
@@ -307,19 +769,17 @@ export const LAYERS = [
         type: 'vector',
         provider: {
           type: 'carto',
-          options: {
-            account: 'wri-01',
-            layers: [
-              {
-                options: {
-                  cartocss: '#wdpa_protected_areas {  polygon-opacity: 1.0; polygon-fill: #704489 }',
-                  cartocss_version: '2.3.0',
-                  sql: 'SELECT * FROM wdpa_protected_areas'
-                },
-                type: 'mapnik'
-              }
-            ]
-          }
+          account: 'wri-01',
+          layers: [
+            {
+              options: {
+                cartocss: '#wdpa_protected_areas {  polygon-opacity: 1.0; polygon-fill: #704489 }',
+                cartocss_version: '2.3.0',
+                sql: 'SELECT * FROM wdpa_protected_areas'
+              },
+              type: 'mapnik'
+            }
+          ]
         }
       },
       render: {
@@ -327,17 +787,13 @@ export const LAYERS = [
           {
             type: 'fill',
             'source-layer': 'layer0',
+            filter: [
+              'all',
+              ['in', ['get', 'iso3'], ['literal', '{country_iso_codes}']]
+            ],
             paint: {
-              'fill-color': '#5ca2d1',
+              'fill-color': '#CCCCCC',
               'fill-opacity': 1
-            }
-          },
-          {
-            type: 'line',
-            'source-layer': 'layer0',
-            paint: {
-              'line-color': '#000000',
-              'line-opacity': 0.1
             }
           }
         ]
@@ -347,7 +803,7 @@ export const LAYERS = [
     legendConfig: {
       type: 'basic',
       items: [
-        { name: 'Protected areas', color: '#5ca2d1' }
+        { name: 'Protected areas', color: '#CCCCCC' }
       ]
     }
   }

@@ -20,25 +20,41 @@ import {
 } from 'modules/operators-detail-fmus';
 import {
   getActiveLayers,
-  getActiveInteractiveLayers,
+  getActiveHoverInteractiveLayers,
   getActiveInteractiveLayersIds,
   getLegendLayers,
   getFMUs,
-  getFMU
+  getFMU,
+  getPopup,
+  getHoverPopup
 } from 'selectors/operators-detail/fmus';
 
 // Intl
 import { injectIntl, intlShape } from 'react-intl';
+
+// Services
+import modal from 'services/modal';
 
 // Components
 import Map from 'components/map-new';
 import LayerManager from 'components/map-new/layer-manager';
 import MapControls from 'components/map/map-controls';
 import ZoomControl from 'components/map/controls/zoom-control';
-
+import FAAttributions from 'components/map-new/fa-attributions';
 
 import Sidebar from 'components/ui/sidebar';
 import Legend from 'components/map-new/legend';
+import Popup from 'components/map-new/popup';
+
+const CERTIFICATIONS = [
+  { label: 'FSC', value: 'fsc' },
+  { label: 'PEFC', value: 'pefc' },
+  { label: 'OLB', value: 'olb' },
+  { label: 'FSC-CW', value: 'fsc-cw' },
+  { label: 'PAFC', value: 'pafc' },
+  { label: 'TLV', value: 'tlv' },
+  { label: 'LS', value: 'ls' }
+];
 
 class OperatorsDetailFMUs extends React.Component {
   componentDidMount() {
@@ -70,7 +86,7 @@ class OperatorsDetailFMUs extends React.Component {
     }
 
     if (!isEqual(interactions, prevInteractions)) {
-      const { fmus: interactionsFmus } = interactions;
+      const { fmusdetail: interactionsFmus } = interactions;
       if (interactionsFmus) {
         this.props.setOperatorsDetailFmu(interactionsFmus.data.id);
       }
@@ -80,7 +96,7 @@ class OperatorsDetailFMUs extends React.Component {
       fmu.loss &&
       prevFmu.loss &&
       (fmu.loss.startDate !== prevFmu.loss.startDate ||
-       fmu.loss.trimeEndDate !== prevFmu.loss.trimeEndDate)
+       fmu.loss.trimEndDate !== prevFmu.loss.trimEndDate)
     ) {
       this.props.setOperatorsDetailAnalysis(fmu, 'loss');
     }
@@ -89,10 +105,15 @@ class OperatorsDetailFMUs extends React.Component {
       fmu.glad &&
       prevFmu.glad &&
       (fmu.glad.startDate !== prevFmu.glad.startDate ||
-        fmu.glad.trimeEndDate !== prevFmu.glad.trimeEndDate)
+        fmu.glad.trimEndDate !== prevFmu.glad.trimEndDate)
     ) {
       this.props.setOperatorsDetailAnalysis(fmu, 'glad');
     }
+  }
+
+  componentWillUnmount() {
+    // Attribution listener
+    document.getElementById('forest-atlas-attribution').removeEventListener('click', this.onCustomAttribute);
   }
 
   onClick = (e) => {
@@ -132,30 +153,43 @@ class OperatorsDetailFMUs extends React.Component {
         }
       }
     });
-
   }
 
   setMapocation = debounce((mapLocation) => {
     this.props.setOperatorsDetailMapLocation(mapLocation);
   }, 500);
 
+  onCustomAttribute = (e) => {
+    e.preventDefault();
+    modal.toggleModal(true, {
+      children: FAAttributions
+    });
+  }
+
+
   render() {
     const {
+      hoverPopup,
       fmu,
       fmus,
       operatorsDetailFmus,
       activeLayers,
+      hoverActiveInteractiveLayers,
       activeInteractiveLayersIds,
       legendLayers
     } = this.props;
+
+    const certifications = CERTIFICATIONS
+      .filter(({ value }) => fmu[`certification-${value}`])
+      .map(ct => ct.label);
 
     return (
       <div className="c-section -map">
         <Sidebar className="-fluid">
           {fmus && !!fmus.length && (
             <div className="c-fmu-card">
-              <h3 className="c-title -extrabig -uppercase -proximanova">Analysis</h3>
-              <p>Select a fmu by using the following select or by clicking on the map shapes.</p>
+              <h3 className="c-title -extrabig -uppercase -proximanova">{this.props.intl.formatMessage({ id: 'analysis' })}</h3>
+              <p>{this.props.intl.formatMessage({ id: 'analysis.description' })}</p>
 
               <div className="fmu-select">
                 <select
@@ -173,6 +207,16 @@ class OperatorsDetailFMUs extends React.Component {
 
                 <div className="fmu-select-value">{fmu.name}</div>
               </div>
+
+              {!!certifications.length &&
+                <div className="fmu-certifications">
+                  <div className="fmu-certifications-title">{this.props.intl.formatMessage({ id: 'certifications' })}:</div>
+                  <div className="fmu-certifications-list">
+                    {certifications.join(', ')}
+                  </div>
+                </div>
+              }
+
 
             </div>
           )}
@@ -203,10 +247,15 @@ class OperatorsDetailFMUs extends React.Component {
             interactiveLayerIds={activeInteractiveLayersIds}
             onClick={this.onClick}
             onHover={this.onHover}
+
+            onLoad={() => {
+              // Attribution listener
+              document.getElementById('forest-atlas-attribution').addEventListener('click', this.onCustomAttribute);
+            }}
+
             // Options
             transformRequest={(url, resourceType) => {
               if (
-                resourceType == 'Source' &&
                 url.startsWith(process.env.OTP_API)
               ) {
                 return {
@@ -217,12 +266,23 @@ class OperatorsDetailFMUs extends React.Component {
                   }
                 };
               }
+
+              return null;
+            }}
+            mapOptions={{
+              customAttribution: '<a id="forest-atlas-attribution" href="http://cod.forest-atlas.org/?l=en" rel="noopener noreferrer" target="_blank">Forest Atlas</a>'
             }}
           >
             {map => (
               <Fragment>
                 {/* LAYER MANAGER */}
                 <LayerManager map={map} layers={activeLayers} />
+
+                <Popup
+                  popup={hoverPopup}
+                  template="fmus-detail"
+                  layers={hoverActiveInteractiveLayers}
+                />
               </Fragment>
             )}
           </Map>
@@ -251,9 +311,10 @@ OperatorsDetailFMUs.propTypes = {
   interactions: PropTypes.shape({}).isRequired,
   fmus: PropTypes.array.isRequired,
   fmu: PropTypes.shape({}).isRequired,
-  fmuBounds: PropTypes.shape({}).isRequired,
   operatorsDetailFmus: PropTypes.object.isRequired,
   activeLayers: PropTypes.array,
+  hoverPopup: PropTypes.shape({}).isRequired,
+  hoverActiveInteractiveLayers: PropTypes.array,
   activeInteractiveLayersIds: PropTypes.array,
   legendLayers: PropTypes.array,
 
@@ -271,10 +332,13 @@ export default injectIntl(
     (state, props) => ({
       operatorsDetailFmus: state.operatorsDetailFmus,
       interactions: state.operatorsDetailFmus.interactions,
+      hoverInteractions: state.operatorsDetailFmus.hoverInteractions,
       fmus: getFMUs(state, props),
       fmu: getFMU(state, props),
+      popup: getPopup(state, props),
+      hoverPopup: getHoverPopup(state, props),
       activeLayers: getActiveLayers(state, props),
-      activeInteractiveLayers: getActiveInteractiveLayers(state, props),
+      hoverActiveInteractiveLayers: getActiveHoverInteractiveLayers(state, props),
       activeInteractiveLayersIds: getActiveInteractiveLayersIds(state, props),
       legendLayers: getLegendLayers(state, props)
     }),

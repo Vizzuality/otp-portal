@@ -123,6 +123,7 @@ const getContractSignatureDocumentation = createSelector(
           requiredDocId: doc['required-operator-document-country'].id,
           url: doc.attachment.url,
           type: doc.type,
+          public: doc.public,
           title: doc['required-operator-document-country'].name,
           explanation: doc['required-operator-document-country'].explanation,
           category: doc['required-operator-document-country']['required-operator-document-group'].name,

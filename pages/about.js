@@ -4,10 +4,6 @@ import sortBy from 'lodash/sortBy';
 
 // Redux
 import { connect } from 'react-redux';
-import { setUser } from 'modules/user';
-import { setRouter } from 'modules/router';
-import { setLanguage } from 'modules/language';
-import { getOperators } from 'modules/operators';
 import { getPartners } from 'modules/partners';
 import { getDonors } from 'modules/donors';
 
@@ -23,27 +19,11 @@ import StaticHeader from 'components/ui/static-header';
 import PartnerCard from 'components/ui/partner-card';
 
 class AboutPage extends React.Component {
-  static async getInitialProps({ req, asPath, pathname, query, store, isServer }) {
-    const url = { asPath, pathname, query };
-    let user = null;
-    let lang = 'en';
-
-    if (isServer) {
-      lang = req.locale.language;
-      user = req.session ? req.session.user : {};
-    } else {
-      lang = store.getState().language;
-      user = store.getState().user;
-    }
-
-    store.dispatch(setLanguage(lang));
-    store.dispatch(setUser(user));
-    store.dispatch(setRouter(url));
-    await store.dispatch(getOperators());
+  static async getInitialProps({ url, store }) {
     await store.dispatch(getPartners());
     await store.dispatch(getDonors());
 
-    return { isServer, url };
+    return { url };
   }
 
   render() {

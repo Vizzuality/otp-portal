@@ -17,7 +17,8 @@ const DEFAULT_VIEWPORT = {
 };
 
 class Map extends Component {
-  events = {};
+  HOVER = {};
+  CLICK = {};
 
   static propTypes = {
     /** A function that returns the map instance */
@@ -61,8 +62,17 @@ class Map extends Component {
     /** A function that exposes when the map is loaded. It returns and object with the `this.map` and `this.mapContainer` reference. */
     onLoad: PropTypes.func,
 
+    /** A function that exposes when the map is unmounted. It's a good oportunity to set the `this.map` and `this.mapContainer` reference as null */
+    onUnmount: PropTypes.func,
+
     /** A function that exposes the viewport */
     onViewportChange: PropTypes.func,
+
+    /** A function that exposes hovering features. */
+    onHover: PropTypes.func,
+
+    /** A function that exposes mouseleave from features. */
+    onMouseLeave: PropTypes.func,
 
     /** A function that exposes the viewport */
     getCursor: PropTypes.func
@@ -92,35 +102,42 @@ class Map extends Component {
       ...this.props.viewport // eslint-disable-line
     },
     flying: false,
-    loaded: false
+    loaded: false,
+    size: {
+      width: 0,
+      height: 0
+    }
   };
 
   componentDidMount() {
-    const { bounds, onReady } = this.props;
-
-    if (!isEmpty(bounds) && !!bounds.bbox && bounds.bbox.every(b => !!b)) {
-      this.fitBounds(0);
-    }
-
-    onReady({
-      map: this.map,
-      mapContainer: this.mapContainer
-    });
+    this.onReady();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const { viewport: prevViewport, bounds: prevBounds } = prevProps;
     const { viewport, bounds } = this.props;
-    const { viewport: stateViewport } = this.state;
+
+    const { size: prevSize } = prevState;
+    const { size, viewport: stateViewport } = this.state;
 
     if (
       !isEmpty(bounds) &&
       !isEqual(bounds, prevBounds) &&
       !!bounds.bbox &&
-      bounds.bbox.every(b => !!b)
+      bounds.bbox.every(b => !!b) &&
+      size.width !== 0 &&
+      size.height !== 0
     ) {
       this.fitBounds();
     }
+
+    if (
+      !isEmpty(bounds) &&
+      !isEqual(size, prevSize)
+    ) {
+      this.fitBounds();
+    }
+
 
     if (!isEqual(viewport, prevViewport)) {
       this.setState({
@@ -133,9 +150,37 @@ class Map extends Component {
     }
   }
 
+  componentWillUnmount() {
+    const { onUnmount } = this.props;
+    if (onUnmount) onUnmount();
+  }
+
+  onReady = () => {
+    const { onReady } = this.props;
+
+    this.setState({
+      size: {
+        width: this.mapContainer && this.mapContainer.offsetWidth,
+        height: this.mapContainer && this.mapContainer.offsetHeight
+      }
+    });
+
+    onReady({
+      map: this.map,
+      mapContainer: this.mapContainer
+    });
+  }
+
   onLoad = () => {
     const { onLoad } = this.props;
-    this.setState({ loaded: true });
+
+    this.setState({
+      loaded: true,
+      size: {
+        width: this.mapContainer && this.mapContainer.offsetWidth,
+        height: this.mapContainer && this.mapContainer.offsetHeight
+      }
+    });
 
     onLoad({
       map: this.map,
@@ -185,6 +230,56 @@ class Map extends Component {
       this.setState({ viewport: newViewport });
       onViewportChange(newViewport);
     }
+  };
+
+  onHover = e => {
+    const { onHover } = this.props;
+    const { features } = e;
+    if (features && features.length) {
+      const { id, source, sourceLayer } = features[0];
+
+      if (this.HOVER.id) {
+        this.map.setFeatureState(
+          {
+            ...this.HOVER
+          },
+          { hover: false }
+        );
+      }
+
+      if (id && source) {
+        this.HOVER = {
+          id,
+          source,
+          ...(sourceLayer && { sourceLayer })
+        };
+
+        this.map.setFeatureState(
+          {
+            ...this.HOVER
+          },
+          { hover: true }
+        );
+      }
+    }
+
+    !!onHover && onHover(e);
+  };
+
+  onMouseLeave = e => {
+    const { onMouseLeave } = this.props;
+    if (this.HOVER.id) {
+      this.map.setFeatureState(
+        {
+          ...this.HOVER
+        },
+        { hover: false }
+      );
+    }
+
+    this.HOVER = {};
+
+    !!onMouseLeave && onMouseLeave(e);
   };
 
   fitBounds = (transitionDuration = 2500) => {
@@ -268,6 +363,8 @@ class Map extends Component {
           onViewportChange={this.onViewportChange}
           onResize={this.onResize}
           onLoad={this.onLoad}
+          onHover={this.onHover}
+          onMouseLeave={this.onMouseLeave}
           // getCursor={getCursor}
 
           transitionInterpolator={new FlyToInterpolator()}

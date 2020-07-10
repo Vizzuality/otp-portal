@@ -22,6 +22,7 @@ const initialState = {
   },
 
   latlng: {},
+  hoverLatLng: {},
 
   interactions: {},
 
@@ -32,7 +33,10 @@ const initialState = {
     'gain',
     'loss',
     'glad',
-    'fmus'
+    'aac-cog',
+    'aac-cod',
+    // 'aac-cmr',
+    'fmusdetail'
   ],
   layersSettings: {},
 
@@ -128,7 +132,7 @@ export default function (state = initialState, action) {
       };
     }
     case SET_OPERATORS_DETAIL_MAP_HOVER_INTERACTIONS: {
-      const { features = [] } = action.payload;
+      const { features = [], lngLat = [] } = action.payload;
       const hoverInteractions = features.reduce(
         (obj, next) => ({
           ...obj,
@@ -143,6 +147,10 @@ export default function (state = initialState, action) {
 
       return {
         ...state,
+        hoverLatLng: {
+          lat: lngLat[1],
+          lng: lngLat[0]
+        },
         hoverInteractions
       };
     }
@@ -301,4 +309,57 @@ export function setOperatorsDetailMapHoverInteractions(payload) {
     payload
   };
 }
+
+export function getGladMaxDate() {
+  return (dispatch) => {
+    return fetch('https://production-api.globalforestwatch.org/v1/glad-alerts/latest', {
+      method: 'GET'
+    })
+      .then((response) => {
+        if (response.ok) return response.json();
+        throw new Error(response.statusText);
+      })
+      .then(({ data }) => {
+        dispatch({
+          type: SET_OPERATORS_DETAIL_MAP_LAYERS_SETTINGS,
+          payload: {
+            id: 'glad',
+            settings: {
+              decodeParams: {
+                endDate: data[0].attributes.date,
+                trimEndDate: data[0].attributes.date,
+                maxDate: data[0].attributes.date
+              },
+              timelineParams: {
+                maxDate: data[0].attributes.date
+              }
+            }
+          }
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+
+        const date = new Date();
+        // Fetch from server ko -> Dispatch error
+        dispatch({
+          type: SET_OPERATORS_DETAIL_MAP_LAYERS_SETTINGS,
+          payload: {
+            id: 'glad',
+            settings: {
+              decodeParams: {
+                endDate: date.toISOString(),
+                trimEndDate: date.toISOString(),
+                maxDate: date.toISOString()
+              },
+              timelineParams: {
+                maxDate: date.toISOString()
+              }
+            }
+          }
+        });
+      });
+  };
+}
+
 

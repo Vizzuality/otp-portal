@@ -12,10 +12,6 @@ import { intlShape } from 'react-intl';
 
 // Redux
 import { connect } from 'react-redux';
-import { setUser } from 'modules/user';
-import { setRouter } from 'modules/router';
-import { setLanguage } from 'modules/language';
-import { getOperators } from 'modules/operators';
 
 import {
   getOperatorsRanking,
@@ -24,12 +20,17 @@ import {
   setOperatorsMapHoverInteractions,
   setOperatorsMapLayersActive,
   setOperatorsMapLayersSettings,
+  setOperatorsSidebar,
   setOperatorsUrl,
-  getOperatorsUrl
+  getOperatorsUrl,
+  getGladMaxDate
 } from 'modules/operators-ranking';
-import { getActiveLayers, getActiveInteractiveLayers, getActiveInteractiveLayersIds, getLegendLayers, getPopup } from 'selectors/operators-ranking';
+import { getActiveLayers, getActiveInteractiveLayers, getActiveInteractiveLayersIds, getLegendLayers, getPopup, getTable } from 'selectors/operators-ranking';
 
 import withTracker from 'components/layout/with-tracker';
+
+// Services
+import modal from 'services/modal';
 
 // Components
 import Layout from 'components/layout/layout';
@@ -38,6 +39,7 @@ import Map from 'components/map-new';
 import LayerManager from 'components/map-new/layer-manager';
 import Popup from 'components/map-new/popup';
 import Legend from 'components/map-new/legend';
+import FAAttributions from 'components/map-new/fa-attributions';
 
 import MapControls from 'components/map/map-controls';
 import ZoomControl from 'components/map/controls/zoom-control';
@@ -48,33 +50,18 @@ import OperatorsTable from 'components/operators/table';
 
 
 class OperatorsPage extends React.Component {
-  static async getInitialProps({ req, asPath, pathname, query, store, isServer }) {
-    const url = { asPath, pathname, query };
-    const { operators, operatorsRanking } = store.getState();
-    let user = null;
-    let lang = 'en';
+  static async getInitialProps({ url, store }) {
+    const { operatorsRanking } = store.getState();
 
-    if (isServer) {
-      lang = req.locale.language;
-      user = req.session ? req.session.user : {};
-    } else {
-      lang = store.getState().language;
-      user = store.getState().user;
-    }
-
-    store.dispatch(setLanguage(lang));
-    store.dispatch(setUser(user));
-    store.dispatch(setRouter(url));
-
-    if (!operators.data.length) {
-      await store.dispatch(getOperators());
+    if (!operatorsRanking.layersSettings.glad) {
+      await store.dispatch(getGladMaxDate());
     }
 
     if (!operatorsRanking.data.length) {
       await store.dispatch(getOperatorsRanking());
     }
 
-    return { isServer, url };
+    return { url };
   }
 
   /* Component Lifecycle */
@@ -84,25 +71,29 @@ class OperatorsPage extends React.Component {
     // Set location
     this.props.setOperatorsMapLocation(getOperatorsUrl(url));
 
-    // Set discalimer
-    if (!Cookies.get('operators.disclaimer')) {
-      toastr.info(
-        'Info',
-        this.props.intl.formatMessage({ id: 'operators.disclaimer' }),
-        {
-          className: '-disclaimer',
-          position: 'bottom-right',
-          timeOut: 15000,
-          onCloseButtonClick: () => {
-            Cookies.set('operators.disclaimer', true);
-          }
-        }
-      );
-    }
+
+    // // Set discalimer
+    // if (!Cookies.get('operators.disclaimer')) {
+    //   toastr.info(
+    //     'Info',
+    //     this.props.intl.formatMessage({ id: 'operators.disclaimer' }),
+    //     {
+    //       className: '-disclaimer',
+    //       position: 'bottom-right',
+    //       timeOut: 15000,
+    //       onCloseButtonClick: () => {
+    //         Cookies.set('operators.disclaimer', true);
+    //       }
+    //     }
+    //   );
+    // }
   }
 
   componentWillUnMount() {
     toastr.remove('operators.disclaimer');
+
+    // Attribution listener
+    document.getElementById('forest-atlas-attribution').removeEventListener('click', this.onCustomAttribute);
   }
 
   onClick = (e) => {
@@ -123,21 +114,31 @@ class OperatorsPage extends React.Component {
     }
   }
 
-  setMapocation = debounce((mapLocation) => {
+  setMapLocation = debounce((mapLocation) => {
     this.props.setOperatorsMapLocation(mapLocation);
   }, 500);
 
+  onCustomAttribute = (e) => {
+    e.preventDefault();
+    modal.toggleModal(true, {
+      children: FAAttributions
+    });
+  }
 
   render() {
     const {
       url,
       operatorsRanking,
+      operatorsTable,
       activeLayers,
       activeInteractiveLayers,
       activeInteractiveLayersIds,
       legendLayers,
-      popup
+      popup,
+      setOperatorsSidebar
     } = this.props;
+
+    const { open } = operatorsRanking.sidebar;
 
     return (
       <Layout
@@ -148,28 +149,43 @@ class OperatorsPage extends React.Component {
         footer={false}
       >
         <div className="c-section -map">
-          <Sidebar>
+          <Sidebar
+            open={open}
+            name={this.props.intl.formatMessage({ id: 'transparency_ranking' })}
+            onToggle={(o) => {
+              setOperatorsSidebar({ open: o });
+            }}
+          >
             <OperatorsFilters />
-            <OperatorsTable operators={operatorsRanking.data} />
+            <OperatorsTable operators={operatorsRanking.data} operatorsTable={operatorsTable} />
           </Sidebar>
 
-          <div className="c-map-container -absolute" style={{ width: 'calc(100% - 600px)', left: 600 }}>
+          <div className="c-map-container -absolute" style={{ width: `calc(100% - ${open ? 700 : 50}px)`, left: open ? 700 : 50 }}>
             {/* Map */}
             <Map
               mapStyle="mapbox://styles/mapbox/light-v9"
 
               // viewport
               viewport={operatorsRanking.map}
-              onViewportChange={this.setMapocation}
+              onViewportChange={this.setMapLocation}
 
               // Interaction
               interactiveLayerIds={activeInteractiveLayersIds}
               onClick={this.onClick}
               onHover={this.onHover}
 
+              onLoad={() => {
+                // Attribution listener
+                document.getElementById('forest-atlas-attribution').addEventListener('click', this.onCustomAttribute);
+              }}
+
+              mapOptions={{
+                customAttribution: '<a id="forest-atlas-attribution" href="http://cod.forest-atlas.org/?l=en" rel="noopener noreferrer" target="_blank">Forest Atlas</a>'
+              }}
+
               // Options
               transformRequest={(url, resourceType) => {
-                if (resourceType == 'Source' && url.startsWith(process.env.OTP_API)) {
+                if (url.startsWith(process.env.OTP_API)) {
                   return {
                     url,
                     headers: {
@@ -184,6 +200,7 @@ class OperatorsPage extends React.Component {
                 <Fragment>
                   <Popup
                     popup={popup}
+                    template="fmus"
                     layers={activeInteractiveLayers}
                     onClose={() => this.props.setOperatorsMapInteractions({})}
                   />
@@ -236,7 +253,8 @@ export default withTracker(withIntl(connect(
     activeInteractiveLayers: getActiveInteractiveLayers(state, props),
     activeInteractiveLayersIds: getActiveInteractiveLayersIds(state, props),
     legendLayers: getLegendLayers(state, props),
-    popup: getPopup(state, props)
+    popup: getPopup(state, props),
+    operatorsTable: getTable(state, props)
   }),
   dispatch => ({
     getOperatorsRanking() {
@@ -257,6 +275,9 @@ export default withTracker(withIntl(connect(
     },
     setOperatorsMapLayersSettings(obj) {
       dispatch(setOperatorsMapLayersSettings(obj));
+    },
+    setOperatorsSidebar(obj) {
+      dispatch(setOperatorsSidebar(obj));
     }
   })
 )(OperatorsPage)));

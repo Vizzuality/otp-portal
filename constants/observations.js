@@ -17,9 +17,14 @@ const FILTERS_REFS = [
     placeholder: 'All Countries'
   },
   {
-    key: 'years',
-    name: 'Year',
-    placeholder: 'All Years'
+    key: 'operator',
+    name: 'Producer',
+    placeholder: 'All producers'
+  },
+  {
+    key: 'fmu_id',
+    name: 'Forest Management Unit',
+    placeholder: 'All FMUs'
   },
   {
     key: 'observer_id',
@@ -32,24 +37,29 @@ const FILTERS_REFS = [
     placeholder: 'All Categories'
   },
   {
+    key: 'subcategory_id',
+    name: 'subcategories',
+    placeholder: 'All Subcategories'
+  },
+  {
+    key: 'validation_status',
+    name: 'Status',
+    placeholder: 'All status'
+  },
+  {
     key: 'severity_level',
     name: 'Severity',
     placeholder: 'All Severities'
   },
   {
-    key: 'fmu_id',
-    name: 'Forest Management Unit',
-    placeholder: 'All FMUs'
+    key: 'years',
+    name: 'Year',
+    placeholder: 'All Years'
   },
   {
     key: 'observation-report',
     name: 'Report',
     placeholder: 'All reports'
-  },
-  {
-    key: 'operator',
-    name: 'Producer',
-    placeholder: 'All producers'
   }
 ];
 

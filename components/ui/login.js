@@ -94,14 +94,14 @@ class Login extends React.Component {
             console.error(errors);
             try {
               errors.forEach(er =>
-                toastr.error('Error', `${er.title}`)
+                toastr.error(this.props.intl.formatMessage({ id: 'Error' }), `${er.title}`)
               );
             } catch (e) {
-              toastr.error('Error', 'Oops! There was an error, try again');
+              toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Oops! There was an error, try again' }));
             }
           });
       } else {
-        toastr.error('Error', 'Fill all the required fields');
+        toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Fill all the required fields' }));
       }
     }, 0);
   }

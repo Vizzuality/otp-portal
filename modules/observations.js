@@ -4,6 +4,8 @@ import Router from 'next/router';
 import isEmpty from 'lodash/isEmpty';
 import compact from 'lodash/compact';
 
+import { toastr } from 'react-redux-toastr';
+
 // Utils
 import { encode, decode, parseObjectSelectOptions } from 'utils/general';
 
@@ -18,6 +20,8 @@ const GET_FILTERS_ERROR = 'GET_FILTERS_ERROR';
 const GET_FILTERS_LOADING = 'GET_FILTERS_LOADING';
 const SET_FILTERS = 'SET_FILTERS';
 const SET_ACTIVE_COLUMNS = 'SET_ACTIVE_COLUMNS';
+const SET_OBSERVATIONS_MAP_LOCATION = 'SET_OBSERVATIONS_MAP_LOCATION';
+const SET_OBSERVATIONS_MAP_CLUSTER = 'SET_OBSERVATIONS_MAP_CLUSTER';
 
 const OBS_MAX_SIZE = 3000;
 
@@ -27,21 +31,29 @@ const initialState = {
   totalSize: 0,
   loading: false,
   error: false,
+  map: {
+    zoom: 4,
+    latitude: 0,
+    longitude: 20
+  },
+  cluster: {},
   filters: {
     data: {
       observation_type: [],
-      country_id: [188, 53],
+      country_id: process.env.OTP_COUNTRIES_IDS,
       fmu_id: [],
       years: [],
       observer_id: [],
       category_id: [],
-      severity_level: []
+      subcategory_id: [],
+      severity_level: [],
+      validation_status: []
     },
     options: {},
     loading: false,
     error: false
   },
-  columns: ['date', 'country', 'operator', 'category', 'observation', 'level', 'fmu', 'report']
+  columns: ['status', 'date', 'country', 'operator', 'category', 'observation', 'level', 'fmu', 'report']
 };
 
 const JSONA = new Jsona();
@@ -81,6 +93,13 @@ export default function (state = initialState, action) {
     case SET_ACTIVE_COLUMNS: {
       return Object.assign({}, state, { columns: action.payload });
     }
+    case SET_OBSERVATIONS_MAP_LOCATION: {
+      return Object.assign({}, state, { map: action.payload });
+    }
+    case SET_OBSERVATIONS_MAP_CLUSTER: {
+      return Object.assign({}, state, { cluster: action.payload });
+    }
+
     default:
       return state;
   }
@@ -98,7 +117,7 @@ export function getObservations() {
       return null;
     }));
 
-    const includes = ['country', 'subcategory', 'subcategory.category', 'operator', 'severity', 'fmu', 'observation-report', 'observers'];
+    const includes = ['country', 'subcategory', 'subcategory.category', 'operator', 'severity', 'fmu', 'observation-report', 'observers', 'observation-documents', 'relevant-operators'];
 
     // Fields
     const currentFields = { fmus: ['name'], operator: ['name'] };
@@ -109,7 +128,7 @@ export function getObservations() {
     // Waiting for fetch from server -> Dispatch loading
     dispatch({ type: GET_OBSERVATIONS_LOADING });
 
-    fetch(url, {
+    return fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -147,7 +166,7 @@ export function getFilters() {
 
     const lang = language === 'zh' ? 'zh-CN' : language;
 
-    fetch(`${process.env.OTP_API}/observation_filters?locale=${lang}`, {
+    return fetch(`${process.env.OTP_API}/observation_filters_tree?locale=${lang}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -175,6 +194,49 @@ export function getFilters() {
   };
 }
 
+export function getDownload() {
+  return (dispatch, getState) => {
+    const { language } = getState();
+    const filters = getState().observations.filters.data;
+    const filtersQuery = compact(Object.keys(filters).map((key) => {
+      if (!isEmpty(filters[key])) {
+        return `filter[${key}]=${filters[key].join(',')}`;
+      }
+      return null;
+    }));
+
+    const includes = ['country', 'subcategory', 'subcategory.category', 'operator', 'severity', 'fmu', 'observation-report', 'observers', 'relevant-operators'];
+
+    // Fields
+    const currentFields = { fmus: ['name'], operator: ['name'] };
+    const fields = Object.keys(currentFields).map(f => `fields[${f}]=${currentFields[f]}`).join('&');
+    const lang = language === 'zh' ? 'zh-CN' : language;
+
+    const url = `${process.env.OTP_API}/observations-csv?locale=${lang}&${fields}&include=${includes.join(',')}&${filtersQuery.join('&')}`;
+
+    return fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'text/csv',
+        'OTP-API-KEY': process.env.OTP_API_KEY
+      }
+    })
+      .then((response) => {
+        if (response.ok) return response.text();
+        toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Oops! There was an error, try again' }));
+      })
+      .then((csv) => {
+        if (csv) {
+          const a = document.createElement('a');
+          a.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`;
+          a.target = '_blank';
+          a.download = 'Observations.csv';
+          a.click();
+        }
+      });
+  };
+}
+
 export function setActiveColumns(activeColumns) {
   return (dispatch) => {
     dispatch({
@@ -189,6 +251,11 @@ export function setFilters(filter) {
     const newFilters = Object.assign({}, state().observations.filters.data);
     const key = Object.keys(filter)[0];
     newFilters[key] = filter[key];
+
+    // default countries
+    if (key === 'country_id' && !filter[key].length) {
+      newFilters[key] = process.env.OTP_COUNTRIES_IDS;
+    }
 
     dispatch({
       type: SET_FILTERS,
@@ -230,5 +297,21 @@ export function getObservationsUrl(url) {
         payload
       });
     }
+  };
+}
+
+// SETTERS
+export function setObservationsMapLocation(payload) {
+  return {
+    type: SET_OBSERVATIONS_MAP_LOCATION,
+    payload
+  };
+}
+
+// SETTERS
+export function setObservationsMapCluster(payload) {
+  return {
+    type: SET_OBSERVATIONS_MAP_CLUSTER,
+    payload
   };
 }

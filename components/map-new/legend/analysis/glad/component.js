@@ -3,14 +3,17 @@ import PropTypes from 'prop-types';
 
 import Spinner from 'components/ui/spinner';
 
+import { injectIntl, intlShape } from 'react-intl';
+
 class LegendAnalysisGLAD extends PureComponent {
   static propTypes = {
     activeLayer: PropTypes.shape({}).isRequired,
-    analysis: PropTypes.shape({}).isRequired
+    analysis: PropTypes.shape({}).isRequired,
+    intl: intlShape
   }
 
   render() {
-    const { activeLayer, analysis } = this.props;
+    const { activeLayer, analysis, intl } = this.props;
     const { decodeParams } = activeLayer;
     const { startDate, trimEndDate } = decodeParams;
     const { data, loading, error } = analysis;
@@ -24,11 +27,11 @@ class LegendAnalysisGLAD extends PureComponent {
         }
 
         {!loading && data &&
-          `There were ${data.value.toLocaleString()} GLAD alerts from ${startDate} to ${trimEndDate}`
+          intl.formatMessage({ id: 'analysis.glad' }, { alerts: data.value.toLocaleString(), startDate, trimEndDate })
         }
       </div>
     );
   }
 }
 
-export default LegendAnalysisGLAD;
+export default injectIntl(LegendAnalysisGLAD);

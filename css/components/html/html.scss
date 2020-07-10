@@ -90,4 +90,10 @@
   strong, b {
     color: $color-text-1;
   }
+
+  iframe {
+    display: block;
+    width: 100%;
+    min-height: 350px;
+  }
 }

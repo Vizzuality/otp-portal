@@ -3,16 +3,13 @@ import PropTypes from 'prop-types';
 
 // Redux
 import { connect } from 'react-redux';
-import { setUser } from 'modules/user';
-import { setRouter } from 'modules/router';
-import { setLanguage } from 'modules/language';
-import { getOperators } from 'modules/operators';
 import { getHowtos, getTools, getFAQs, getTutorials } from 'modules/help';
 
 import withTracker from 'components/layout/with-tracker';
 
 // Intl
 import withIntl from 'hoc/with-intl';
+import { intlShape } from 'react-intl';
 
 // Components
 import Layout from 'components/layout/layout';
@@ -27,34 +24,15 @@ import HelpFaqs from 'components/help/faqs';
 import HelpTutorials from 'components/help/tutorials';
 
 class HelpPage extends React.Component {
-  static async getInitialProps({ req, asPath, pathname, query, store, isServer }) {
-    const { operators } = store.getState();
-    const url = { asPath, pathname, query };
-    let user = null;
-    let lang = 'en';
+  static async getInitialProps({ url, store }) {
+    const { howtos, tools, faqs, tutorials } = store.getState().help;
 
-    if (isServer) {
-      lang = req.locale.language;
-      user = req.session ? req.session.user : {};
-    } else {
-      lang = store.getState().language;
-      user = store.getState().user;
-    }
+    if (!howtos.data.length) await store.dispatch(getHowtos());
+    if (!tools.data.length) await store.dispatch(getTools());
+    if (!faqs.data.length) await store.dispatch(getFAQs());
+    if (!tutorials.data.length) await store.dispatch(getTutorials());
 
-    store.dispatch(setLanguage(lang));
-    store.dispatch(setUser(user));
-    store.dispatch(setRouter(url));
-
-    if (!operators.data.length) {
-      await store.dispatch(getOperators());
-    }
-
-    await store.dispatch(getHowtos());
-    await store.dispatch(getTools());
-    await store.dispatch(getFAQs());
-    await store.dispatch(getTutorials());
-
-    return { isServer, url };
+    return { url };
   }
 
   render() {
@@ -142,7 +120,12 @@ class HelpPage extends React.Component {
 }
 
 HelpPage.propTypes = {
-  url: PropTypes.object.isRequired
+  url: PropTypes.object.isRequired,
+  howtos: PropTypes.shape({}),
+  tools: PropTypes.shape({}),
+  faqs: PropTypes.shape({}),
+  tutorials: PropTypes.shape({}),
+  intl: intlShape.isRequired
 };
 
 export default withTracker(withIntl(connect(
