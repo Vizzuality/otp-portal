@@ -63,7 +63,7 @@ class NavigationList extends React.Component {
             </Dropdown>
           </li>
         )}
-        <li>
+        {/* <li>
           <Link href="/countries">
             <a
               className={
