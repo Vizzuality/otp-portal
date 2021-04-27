@@ -17,16 +17,20 @@ const initialState = {
     zoom: 5,
     center: {
       lat: 0,
-      lng: 18
-    }
-  }
+      lng: 18,
+    },
+  },
 };
 
 /* Reducer */
-export default function (state = initialState, action) {
+export default function Partners(state = initialState, action) {
   switch (action.type) {
     case GET_PARTNERS_SUCCESS:
-      return Object.assign({}, state, { data: action.payload, loading: false, error: false });
+      return Object.assign({}, state, {
+        data: action.payload,
+        loading: false,
+        error: false,
+      });
     case GET_PARTNERS_ERROR:
       return Object.assign({}, state, { error: true, loading: false });
     case GET_PARTNERS_LOADING:
@@ -45,8 +49,8 @@ export function getPartners() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'OTP-API-KEY': process.env.OTP_API_KEY
-      }
+        'OTP-API-KEY': process.env.OTP_API_KEY,
+      },
     })
       .then((response) => {
         if (response.ok) return response.json();
@@ -57,7 +61,7 @@ export function getPartners() {
 
         dispatch({
           type: GET_PARTNERS_SUCCESS,
-          payload: dataParsed
+          payload: dataParsed,
         });
       })
       .catch((err) => {
@@ -65,7 +69,7 @@ export function getPartners() {
         // Fetch from server ko -> Dispatch error
         dispatch({
           type: GET_PARTNERS_ERROR,
-          payload: err.message
+          payload: err.message,
         });
       });
   };

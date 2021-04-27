@@ -8,21 +8,24 @@ const GET_SAWMILL_LOCATION_LOADING = 'GET_SAWMILL_LOCATION_LOADING';
 const GET_SAWMILL_LOCATION_ERROR = 'GET_SAWMILL_LOCATION_ERROR';
 
 const initialState = {
-  viewport: { // TODO : transfer zoom and center
+  viewport: {
+    // TODO : transfer zoom and center
     zoom: 5,
     latitude: 0,
-    longitude: 18
+    longitude: 18,
   },
   loading: false,
   error: false,
-  sawmill: {}
+  sawmill: {},
 };
 
 /* Reducer */
-export default function (state = initialState, action) {
+export default function Sawmill(state = initialState, action) {
   switch (action.type) {
     case SAWMILL_MAP_LOCATION: {
-      return Object.assign({}, state, { viewport: { ...state.viewport, ...action.payload } });
+      return Object.assign({}, state, {
+        viewport: { ...state.viewport, ...action.payload },
+      });
     }
 
     case SAWMILL_UNMOUNT_MAP: {
@@ -33,21 +36,21 @@ export default function (state = initialState, action) {
       return Object.assign({}, state, {
         sawmill: action.payload,
         loading: false,
-        error: false
+        error: false,
       });
     }
 
     case GET_SAWMILL_LOCATION_LOADING: {
       return Object.assign({}, state, {
         loading: true,
-        error: false
+        error: false,
       });
     }
 
     case GET_SAWMILL_LOCATION_ERROR: {
       return Object.assign({}, state, {
         error: true,
-        loading: false
+        loading: false,
       });
     }
 
@@ -59,7 +62,7 @@ export default function (state = initialState, action) {
 export function setMapLocation(mapLocation) {
   return {
     type: SAWMILL_MAP_LOCATION,
-    payload: mapLocation
+    payload: mapLocation,
   };
 }
 
@@ -72,8 +75,8 @@ export function getSawMillLocationById(id) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'OTP-API-KEY': process.env.OTP_API_KEY
-      }
+        'OTP-API-KEY': process.env.OTP_API_KEY,
+      },
     })
       .then((response) => {
         if (response.ok) return response.json();
@@ -83,14 +86,14 @@ export function getSawMillLocationById(id) {
         // Fetch from server ok -> Dispatch geojson sawmill data
         dispatch({
           type: GET_SAWMILL_LOCATION_SUCCESS,
-          payload: data
+          payload: data,
         });
       })
       .catch((err) => {
         // Fetch from server ko -> Dispatch error
         dispatch({
           type: GET_SAWMILL_LOCATION_ERROR,
-          payload: err.message
+          payload: err.message,
         });
       });
   };
@@ -99,7 +102,7 @@ export function getSawMillLocationById(id) {
 export function unmountMap() {
   return (dispatch) => {
     dispatch({
-      type: SAWMILL_UNMOUNT_MAP
+      type: SAWMILL_UNMOUNT_MAP,
     });
   };
 }

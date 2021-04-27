@@ -5,16 +5,20 @@
     display: block;
   }
 
+  .dropdown__trigger {
+    margin-right: 0;
+  }
+
   // Content
   .dropdown__content {
     display: none;
     position: absolute;
     top: calc(100% - 5px);
     right: 0;
-    box-shadow: 0 2px 6px rgba($color-black ,0.25);
+    box-shadow: 0 2px 6px rgba($color-black, 0.25);
 
     &:after {
-      content: "";
+      content: '';
       position: absolute;
       top: 0;
       right: $space-1 * 7;

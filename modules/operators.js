@@ -14,17 +14,17 @@ const JSONA = new Jsona();
 const initialState = {
   data: [],
   loading: false,
-  error: false
+  error: false,
 };
 
 /* Reducer */
-export default function (state = initialState, action) {
+export default function Operators(state = initialState, action) {
   switch (action.type) {
     case GET_OPERATORS_SUCCESS:
       return Object.assign({}, state, {
         data: action.payload,
         loading: false,
-        error: false
+        error: false,
       });
     case GET_OPERATORS_ERROR:
       return Object.assign({}, state, { error: true, loading: false });
@@ -32,7 +32,7 @@ export default function (state = initialState, action) {
       return Object.assign({}, state, { loading: true, error: false });
     case SET_ACTIVE_MAP_LAYERS:
       return Object.assign({}, state, {
-        map: { activeLayers: action.payload }
+        map: { activeLayers: action.payload },
       });
     default:
       return state;
@@ -48,13 +48,17 @@ export function getOperators() {
     const lang = language === 'zh' ? 'zh-CN' : language;
 
     return fetch(
-      `${process.env.OTP_API}/operators?locale=${lang}&page[size]=2000&filter[country]=${process.env.OTP_COUNTRIES_IDS.join(',')}&filter[fa]=true`,
+      `${
+        process.env.OTP_API
+      }/operators?locale=${lang}&page[size]=2000&filter[country]=${process.env.OTP_COUNTRIES_IDS.join(
+        ','
+      )}&filter[fa]=true`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'OTP-API-KEY': process.env.OTP_API_KEY
-        }
+          'OTP-API-KEY': process.env.OTP_API_KEY,
+        },
       }
     )
       .then((response) => {
@@ -66,7 +70,7 @@ export function getOperators() {
 
         dispatch({
           type: GET_OPERATORS_SUCCESS,
-          payload: dataParsed
+          payload: dataParsed,
         });
       })
       .catch((err) => {
@@ -74,7 +78,7 @@ export function getOperators() {
         // Fetch from server ko -> Dispatch error
         dispatch({
           type: GET_OPERATORS_ERROR,
-          payload: err.message
+          payload: err.message,
         });
       });
   };

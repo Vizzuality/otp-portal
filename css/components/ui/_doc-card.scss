@@ -43,6 +43,10 @@
     right: 12px;
   }
 
+  .doc-card-content {
+    margin: $space-1 * 2 0;
+  }
+
   .doc-card-content-container {
     display: flex;
     flex-direction: column;
@@ -143,25 +147,81 @@
     }
   }
 
+  .doc-card-annexes {
+    // display: flex;
+    // align-items: center;
+  }
+
   .doc-card-annexes-title {
-    margin: 0;
+    text-transform: uppercase;
+    color: rgba($color-text-1, 0.5);
+    font-size: $font-size-extrasmall;
+    font-family: $font-family-proximanova;
+    letter-spacing: 0.75px;
   }
 
   .doc-card-annex-text {
     font-size: $font-size-small;
   }
 
-  .doc-card-date {
+  .doc-card-why {
+
+  }
+
+  .doc-card-source {
+    position: relative;
+    text-transform: uppercase;
     color: rgba($color-text-1, 0.5);
+    font-size: $font-size-extrasmall;
     font-family: $font-family-proximanova;
+    letter-spacing: 0.75px;
+    padding-top: $space-1 * 2;
+    margin-bottom: $space-1;
+
+    .-source {
+      color: $color-text-1;
+    }
+
+    &:after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 20px;
+      height: 1px;
+      background: rgba($color-text-1, 0.5);
+    }
+  }
+
+  .doc-card-date {
+    text-transform: uppercase;
+    color: rgba($color-text-1, 0.5);
+    font-size: $font-size-small;
+    font-family: $font-family-proximanova;
+    letter-spacing: 0.75px;
+
+    span {
+      display: block;
+
+      &.-date {
+        color: $color-text-1;
+      }
+    }
   }
 
   .doc-card-status {
     font-family: $font-family-proximanova;
+    font-size: $font-size-small;
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+
+    &.-why {
+      cursor: pointer;
+    }
   }
 
   .doc-card-title {
-    margin: $space-1 * 2 0;
+    margin: 0;
   }
 
   .doc-card-fmus {

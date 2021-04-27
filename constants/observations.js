@@ -1,10 +1,3 @@
-const PALETTE_COLOR_1 = [
-  { fill: '#9B9B9B' },
-  { fill: '#005b23' },
-  { fill: '#333333' },
-  { fill: '#e98300' }
-];
-
 const FILTERS_REFS = [
   {
     key: 'observation_type',
@@ -64,6 +57,5 @@ const FILTERS_REFS = [
 ];
 
 export {
-  FILTERS_REFS,
-  PALETTE_COLOR_1
+  FILTERS_REFS
 };

@@ -7,84 +7,36 @@ import classnames from 'classnames';
 import Input from './input';
 
 class Datepicker extends PureComponent {
-  // renderCalendarHeader = ({
-  //   date,
-  //   changeYear,
-  //   changeMonth,
-  //   decreaseMonth,
-  //   increaseMonth,
-  //   prevMonthButtonDisabled,
-  //   nextMonthButtonDisabled
-  // }) => {
-  //   const { settings } = this.props;
-  //   const { minDate, maxDate } = settings;
-  //   const maxMoment = moment(maxDate);
-  //   const minMoment = moment(minDate);
-
-  //   return (
-  //     <div className="c-datepicker-header">
-  //       <Button
-  //         theme="theme-button-small square"
-  //         className="menu-link prev-month"
-  //         onClick={decreaseMonth}
-  //         disabled={prevMonthButtonDisabled}
-  //       >
-  //         <Icon icon={arrowIcon} />
-  //       </Button>
-  //       <Dropdown
-  //         className="c-date-dropdown"
-  //         theme="theme-dropdown-native theme-dropdown-native-button"
-  //         options={moment
-  //           .months()
-  //           .filter((m, i) => {
-  //             if (date.getFullYear() === minMoment.year()) {
-  //               return i >= minMoment.month();
-  //             } else if (date.getFullYear() === maxMoment.year()) {
-  //               return i <= maxMoment.month();
-  //             }
-  //             return true;
-  //           })
-  //           .map((m, i) => ({ value: i, label: m }))}
-  //         onChange={changeMonth}
-  //         value={date.getMonth()}
-  //         native
-  //       />
-  //       <Dropdown
-  //         className="c-date-dropdown"
-  //         theme="theme-dropdown-native theme-dropdown-native-button"
-  //         options={range(
-  //           parseInt(minMoment.year(), 10),
-  //           parseInt(maxMoment.year(), 10) + 1
-  //         ).map(i => ({ value: i, label: i }))}
-  //         onChange={changeYear}
-  //         value={date.getFullYear()}
-  //         native
-  //       />
-  //       <Button
-  //         theme="theme-button-small square"
-  //         className="menu-link next-month"
-  //         onClick={increaseMonth}
-  //         disabled={nextMonthButtonDisabled}
-  //       >
-  //         <Icon icon={arrowIcon} />
-  //       </Button>
-  //     </div>
-  //   );
-  // };
-
-  renderCalendarContainer = ({ children }) => createPortal(
-    <CalendarContainer>
-      {children}
-    </CalendarContainer>
-    , document.body);
+  // eslint-disable-next-line class-methods-use-this
+  renderCalendarContainer({ children }) {
+    let container;
+    if (typeof window !== 'undefined') {
+      container = document.querySelector('#__next');
+    }
+    return container
+      ? createPortal(
+        <CalendarContainer>{children}</CalendarContainer>,
+          container
+        )
+      : null;
+  }
 
   render() {
-    const { className, onDateChange, settings, theme, date, dateFormat } = this.props;
+    const {
+      className,
+      onDateChange,
+      settings,
+      theme,
+      date,
+      dateFormat,
+    } = this.props;
     const { minDate, maxDate } = settings;
 
     return (
       <div
-        ref={(ref) => { this.ref = ref; }}
+        ref={(ref) => {
+          this.ref = ref;
+        }}
         className={classnames('c-datepicker', theme, className)}
       >
         <ReactDatePicker
@@ -101,17 +53,17 @@ class Datepicker extends PureComponent {
           popperClassName="c-datepicker-popper"
           popperModifiers={{
             flip: {
-              enabled: false
+              enabled: false,
             },
             offset: {
               enabled: true,
-              offset: '0px, -15px'
+              offset: '0px, -15px',
             },
             preventOverflow: {
               enabled: true,
               escapeWithReference: false, // force popper to stay in viewport (even when input is scrolled out of view)
-              boundariesElement: 'viewport'
-            }
+              boundariesElement: 'viewport',
+            },
           }}
           // Func
           onSelect={onDateChange}
@@ -128,7 +80,7 @@ Datepicker.propTypes = {
   date: PropTypes.object,
   dateFormat: PropTypes.string,
   onDateChange: PropTypes.func.isRequired,
-  settings: PropTypes.object
+  settings: PropTypes.object,
 };
 
 export default Datepicker;

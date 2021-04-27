@@ -1,9 +1,13 @@
-import React, { createElement } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 // Constants
-import { PALETTE_COLOR_1, ANIMATION_TIMES, LEGEND_SEVERITY } from 'constants/rechart';
+import {
+  PALETTE_COLOR_1,
+  ANIMATION_TIMES,
+  LEGEND_SEVERITY,
+} from 'constants/rechart';
 
 // Utils
 import { HELPERS_OBS } from 'utils/observations';
@@ -12,17 +16,24 @@ import { HELPERS_OBS } from 'utils/observations';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import ChartLegend from 'components/ui/chart-legend';
 
-
 export default class TotalObservationsByOperatorByCategory extends React.Component {
-  getXAxis = (max) => {
+  getXAxis(max) {
     if (this.props.horizontal) {
-      return <XAxis key="x-axis" hide axisLine={false} domain={[0, max]} type="number" />;
+      return (
+        <XAxis
+          key="x-axis"
+          hide
+          axisLine={false}
+          domain={[0, max]}
+          type="number"
+        />
+      );
     }
 
     return <XAxis key="x-axis" hide axisLine />;
   }
 
-  getYAxis = (max) => {
+  getYAxis(max) {
     if (this.props.horizontal) {
       return <YAxis key="y-axis" hide axisLine type="category" />;
     }
@@ -37,23 +48,23 @@ export default class TotalObservationsByOperatorByCategory extends React.Compone
 
     const className = classnames({
       'c-chart-container': true,
-      '-horizontal': !!horizontal
+      '-horizontal': !!horizontal,
     });
 
     const classColumns = classnames({
       columns: true,
       'small-12': horizontal,
-      'small-6 medium-4 large-2': !horizontal
+      'small-6 medium-4 large-2': !horizontal,
     });
 
     const classChart = classnames({
       chart: true,
-      '-max-width-100': !horizontal
+      '-max-width-100': !horizontal,
     });
 
     const classTitle = classnames({
       'c-title': true,
-      '-default': true
+      '-default': true,
     });
 
     return (
@@ -68,7 +79,11 @@ export default class TotalObservationsByOperatorByCategory extends React.Compone
         {/* Charts */}
         <div className="row l-row">
           {Object.keys(groupedByCategory).map((category) => {
-            const groupedBySeverity = HELPERS_OBS.getGroupedBySeverity(groupedByCategory[category]);
+            const groupedBySeverity = HELPERS_OBS.getGroupedBySeverity(
+              groupedByCategory[category],
+              false,
+              'severity'
+            );
 
             return (
               <div key={category} className={classColumns}>
@@ -86,7 +101,7 @@ export default class TotalObservationsByOperatorByCategory extends React.Compone
                           top: 20,
                           right: 20,
                           bottom: 20,
-                          left: 20
+                          left: 20,
                         }}
                         {...ANIMATION_TIMES}
                       >
@@ -95,37 +110,36 @@ export default class TotalObservationsByOperatorByCategory extends React.Compone
 
                         <Bar
                           dataKey="hight"
-                          fill={PALETTE_COLOR_1[0].fill}
+                          fill={PALETTE_COLOR_1[3].fill}
                           label={{
                             position: horizontal ? 'right' : 'top',
-                            formatter: v => v || null
+                            formatter: (v) => v || null,
                           }}
                         />
                         <Bar
                           dataKey="medium"
-                          fill={PALETTE_COLOR_1[1].fill}
+                          fill={PALETTE_COLOR_1[2].fill}
                           label={{
                             position: horizontal ? 'right' : 'top',
-                            formatter: v => v || null
+                            formatter: (v) => v || null,
                           }}
                         />
                         <Bar
                           dataKey="low"
-                          fill={PALETTE_COLOR_1[2].fill}
+                          fill={PALETTE_COLOR_1[1].fill}
                           label={{
                             position: horizontal ? 'right' : 'top',
-                            formatter: v => v || null
+                            formatter: (v) => v || null,
                           }}
                         />
                         <Bar
                           dataKey="unknown"
-                          fill={PALETTE_COLOR_1[3].fill}
+                          fill={PALETTE_COLOR_1[0].fill}
                           label={{
                             position: horizontal ? 'right' : 'top',
-                            formatter: v => v || null
+                            formatter: (v) => v || null,
                           }}
                         />
-
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -157,5 +171,5 @@ export default class TotalObservationsByOperatorByCategory extends React.Compone
 TotalObservationsByOperatorByCategory.propTypes = {
   data: PropTypes.array,
   year: PropTypes.number,
-  horizontal: PropTypes.bool
+  horizontal: PropTypes.bool,
 };

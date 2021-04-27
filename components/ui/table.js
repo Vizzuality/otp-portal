@@ -25,6 +25,7 @@ export default function Table({ data, options, className }) {
         showPageSizeOptions={options.showPageSizeOptions}
         sortable
         resizable={false}
+        minRows={0}
         // Api pagination & sort
         // manual={options.manual}
         onPageChange={options.onPageChange}

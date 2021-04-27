@@ -1,21 +1,69 @@
-
 .c-filters {
-  background-color: $color-secondary;
-  padding: 30px 30px 65px;
+  padding-top: 36px;
 
   .c-title {
     margin-top: 0;
+    font-size: 36px;
+    letter-spacing: 0;
+    line-height: 41px;
+    display: flex;
+    align-items: center;
+
+    .filters-toggle-btn {
+      background: none;
+      border: 1px solid $color-primary;
+      cursor: pointer;
+      outline: none;
+      height: 32px;
+      width: 32px;
+      padding: 0;
+      margin-left: 20px;
+
+      svg {
+        margin-bottom: 10px;
+        fill: $color-primary;
+      }
+
+      &.-green {
+        background-color: $color-primary;
+
+        svg {
+          fill: white;
+        }
+      }
+    }
   }
 
-  .field {
-    .title {
-      font-family: $font-family-georgia;
-      color: $color-white;
-      text-transform: capitalize;
-      margin-bottom: 2px;
-      font-size: $font-size-big;
-      line-height: 26px;
-      font-weight: normal;
+  .filters-wrapper {
+    background-color: $color-primary;
+    padding: 30px 30px 65px;
+
+    .flex-wrapper {
+      display: flex;
+      flex-flow: row wrap;
+
+      .field {
+        width: calc(25% - 50px);
+        margin-right: 50px;
+
+        .title {
+          font-family: $font-family-georgia;
+          color: $color-white;
+          text-transform: capitalize;
+          margin-bottom: 2px;
+          font-size: $font-size-big;
+          line-height: 26px;
+          font-weight: normal;
+        }
+
+        .Select {
+          cursor: pointer;
+
+          input {
+            color: rgba(255, 255, 255, 0.5);
+          }
+        }
+      }
     }
   }
 }

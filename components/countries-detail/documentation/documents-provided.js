@@ -14,12 +14,8 @@ import { PieChart, Pie, ResponsiveContainer, Cell } from 'recharts';
 import ChartLegend from 'components/ui/chart-legend';
 
 function DocumentsProvided(props) {
-  const { data, user, router } = props;
-
-  const filteredData = data.filter(d => d.status !== 'doc_not_required');
-
-  const groupedByCategory = HELPERS_DOC.getGroupedByCategory(filteredData);
-  const groupedByStatusChart = HELPERS_DOC.getGroupedByStatusChart(filteredData);
+  const { data, groupedByStatusChart, user, router } = props;
+  const groupedByCategory = HELPERS_DOC.getGroupedByCategory(data);
 
   const max = HELPERS_DOC.getMaxLength(groupedByCategory);
   const legend = omit(HELPERS_DOC.getMetadata(), 'doc_not_required');
@@ -32,7 +28,7 @@ function DocumentsProvided(props) {
       <div className="row l-row">
         <div className="columns small-6">
           <div className="c-chart">
-            <ResponsiveContainer height={360}>
+            <ResponsiveContainer height={600}>
               <PieChart>
                 <Pie
                   data={groupedByStatusChart}
@@ -45,9 +41,13 @@ function DocumentsProvided(props) {
                   // If you want to change the labels you should do something similar to this
                   // https://github.com/recharts/recharts/blob/master/src/polar/Pie.js#L339
                 >
-                  {groupedByStatusChart.map(entry =>
-                    <Cell key={entry.label} fill={entry.fill} stroke={entry.stroke} />
-                  )}
+                  {groupedByStatusChart.map((entry) => (
+                    <Cell
+                      key={entry.label}
+                      fill={entry.fill}
+                      stroke={entry.stroke}
+                    />
+                  ))}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
@@ -55,15 +55,19 @@ function DocumentsProvided(props) {
             {/* Legend */}
             <ChartLegend
               list={Object.keys(legend)
-                .map(k => ({ id: k, ...legend[k] }))
+                .map((k) => ({ id: k, ...legend[k] }))
                 .filter((k) => {
-                  if (user.token && user.role === 'government' && user.country && user.country.toString() === router.query.id) {
+                  if (
+                    user.token &&
+                    user.role === 'government' &&
+                    user.country &&
+                    user.country.toString() === router.query.id
+                  ) {
                     return true;
                   }
 
                   return !k.user;
-                })
-              }
+                })}
               className="-absolute"
             />
           </div>
@@ -73,21 +77,23 @@ function DocumentsProvided(props) {
           <div className="c-doc-by-category">
             <ul className="doc-by-category-list">
               {Object.keys(groupedByCategory).map((category) => {
-                const groupedByStatus = HELPERS_DOC.getGroupedByStatus(groupedByCategory[category]);
-                const width = `${(groupedByCategory[category].length / max) * 100}%`;
+                const groupedByStatus = HELPERS_DOC.getGroupedByStatus(
+                  groupedByCategory[category]
+                );
+                const width = `${
+                  (groupedByCategory[category].length / max) * 100
+                }%`;
 
                 return (
-                  <li
-                    key={category}
-                    className="doc-by-category-list-item"
-                  >
+                  <li key={category} className="doc-by-category-list-item">
                     <div className="doc-by-category-chart">
-                      <div
-                        className="doc-by-category-bar"
-                        style={{ width }}
-                      >
+                      <div className="doc-by-category-bar" style={{ width }}>
                         {sortBy(Object.keys(groupedByStatus)).map((status) => {
-                          const segmentWidth = `${(groupedByStatus[status].length / groupedByCategory[category].length) * 100}%`;
+                          const segmentWidth = `${
+                            (groupedByStatus[status].length /
+                              groupedByCategory[category].length) *
+                            100
+                          }%`;
 
                           return (
                             <div
@@ -99,7 +105,9 @@ function DocumentsProvided(props) {
                         })}
                       </div>
                     </div>
-                    <h3 className="c-title -default doc-by-category-title">{category}</h3>
+                    <h3 className="c-title -default doc-by-category-title">
+                      {category}
+                    </h3>
                   </li>
                 );
               })}
@@ -112,18 +120,18 @@ function DocumentsProvided(props) {
 }
 
 DocumentsProvided.defaultProps = {
-  data: []
+  data: [],
+  groupedByStatusChart: [],
 };
 
 DocumentsProvided.propTypes = {
   data: PropTypes.array,
+  groupedByStatusChart: PropTypes.array,
   user: PropTypes.object,
-  router: PropTypes.object
+  router: PropTypes.object,
 };
 
-export default connect(
-  state => ({
-    user: state.user,
-    router: state.router
-  })
-)(DocumentsProvided);
+export default connect((state) => ({
+  user: state.user,
+  router: state.router,
+}))(DocumentsProvided);

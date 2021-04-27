@@ -16,7 +16,7 @@ import {
   setOperatorsDetailFmuBounds,
   setOperatorsDetailAnalysis,
   setOperatorsDetailMapInteractions,
-  setOperatorsDetailMapHoverInteractions
+  setOperatorsDetailMapHoverInteractions,
 } from 'modules/operators-detail-fmus';
 import {
   getActiveLayers,
@@ -26,7 +26,7 @@ import {
   getFMUs,
   getFMU,
   getPopup,
-  getHoverPopup
+  getHoverPopup,
 } from 'selectors/operators-detail/fmus';
 
 // Intl
@@ -53,7 +53,7 @@ const CERTIFICATIONS = [
   { label: 'FSC-CW', value: 'fsc-cw' },
   { label: 'PAFC', value: 'pafc' },
   { label: 'TLV', value: 'tlv' },
-  { label: 'LS', value: 'ls' }
+  { label: 'LS', value: 'ls' },
 ];
 
 class OperatorsDetailFMUs extends React.Component {
@@ -72,7 +72,11 @@ class OperatorsDetailFMUs extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { fmus: prevFmus, fmu: prevFmu, interactions: prevInteractions } = prevProps;
+    const {
+      fmus: prevFmus,
+      fmu: prevFmu,
+      interactions: prevInteractions,
+    } = prevProps;
     const { fmus, fmu, interactions } = this.props;
 
     if (!isEqual(fmus, prevFmus)) {
@@ -96,7 +100,7 @@ class OperatorsDetailFMUs extends React.Component {
       fmu.loss &&
       prevFmu.loss &&
       (fmu.loss.startDate !== prevFmu.loss.startDate ||
-       fmu.loss.trimEndDate !== prevFmu.loss.trimEndDate)
+        fmu.loss.trimEndDate !== prevFmu.loss.trimEndDate)
     ) {
       this.props.setOperatorsDetailAnalysis(fmu, 'loss');
     }
@@ -113,11 +117,26 @@ class OperatorsDetailFMUs extends React.Component {
 
   componentWillUnmount() {
     // Attribution listener
-    document.getElementById('forest-atlas-attribution').removeEventListener('click', this.onCustomAttribute);
+    document
+      .getElementById('forest-atlas-attribution')
+      .removeEventListener('click', this.onCustomAttribute);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  onCustomAttribute(e) {
+    e.preventDefault();
+    modal.toggleModal(true, {
+      children: FAAttributions,
+    });
   }
 
   onClick = (e) => {
-    if (e.features && e.features.length && !e.target.classList.contains('mapbox-prevent-click')) { // No better way to do this
+    if (
+      e.features &&
+      e.features.length &&
+      !e.target.classList.contains('mapbox-prevent-click')
+    ) {
+      // No better way to do this
       const { features, lngLat } = e;
       this.props.setOperatorsDetailMapInteractions({ features, lngLat });
     } else {
@@ -134,12 +153,12 @@ class OperatorsDetailFMUs extends React.Component {
     }
   }
 
-  getBBOX = () => {
+  getBBOX() {
     const { fmus } = this.props;
 
     const bbox = getBBox({
       type: 'FeatureCollection',
-      features: fmus.map(f => f.geojson)
+      features: fmus.map((f) => f.geojson),
     });
 
     this.props.setOperatorsDetailFmuBounds({
@@ -149,23 +168,11 @@ class OperatorsDetailFMUs extends React.Component {
           top: 50,
           bottom: 50,
           left: 350,
-          right: 50
-        }
-      }
+          right: 50,
+        },
+      },
     });
   }
-
-  setMapocation = debounce((mapLocation) => {
-    this.props.setOperatorsDetailMapLocation(mapLocation);
-  }, 500);
-
-  onCustomAttribute = (e) => {
-    e.preventDefault();
-    modal.toggleModal(true, {
-      children: FAAttributions
-    });
-  }
-
 
   render() {
     const {
@@ -176,48 +183,56 @@ class OperatorsDetailFMUs extends React.Component {
       activeLayers,
       hoverActiveInteractiveLayers,
       activeInteractiveLayersIds,
-      legendLayers
+      legendLayers,
     } = this.props;
 
-    const certifications = CERTIFICATIONS
-      .filter(({ value }) => fmu[`certification-${value}`])
-      .map(ct => ct.label);
+    const certifications = CERTIFICATIONS.filter(
+      ({ value }) => fmu[`certification-${value}`]
+    ).map((ct) => ct.label);
 
     return (
       <div className="c-section -map">
         <Sidebar className="-fluid">
           {fmus && !!fmus.length && (
             <div className="c-fmu-card">
-              <h3 className="c-title -extrabig -uppercase -proximanova">{this.props.intl.formatMessage({ id: 'analysis' })}</h3>
-              <p>{this.props.intl.formatMessage({ id: 'analysis.description' })}</p>
+              <h3 className="c-title -extrabig -uppercase -proximanova">
+                {this.props.intl.formatMessage({ id: 'analysis' })}
+              </h3>
+              <p>
+                {this.props.intl.formatMessage({ id: 'analysis.description' })}
+              </p>
 
               <div className="fmu-select">
                 <select
                   value={fmu.id}
                   onChange={(e) => {
                     this.props.setOperatorsDetailFmu(
-                      fmus.find(f => Number(f.id) === Number(e.currentTarget.value)).id
+                      fmus.find(
+                        (f) => Number(f.id) === Number(e.currentTarget.value)
+                      ).id
                     );
                   }}
                 >
-                  {fmus.map(f => (
-                    <option key={f.id} value={f.id}>{f.name}</option>
+                  {fmus.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
                   ))}
                 </select>
 
                 <div className="fmu-select-value">{fmu.name}</div>
               </div>
 
-              {!!certifications.length &&
+              {!!certifications.length && (
                 <div className="fmu-certifications">
-                  <div className="fmu-certifications-title">{this.props.intl.formatMessage({ id: 'certifications' })}:</div>
+                  <div className="fmu-certifications-title">
+                    {this.props.intl.formatMessage({ id: 'certifications' })}:
+                  </div>
                   <div className="fmu-certifications-list">
                     {certifications.join(', ')}
                   </div>
                 </div>
-              }
-
-
+              )}
             </div>
           )}
 
@@ -236,44 +251,40 @@ class OperatorsDetailFMUs extends React.Component {
           <Map
             mapStyle="mapbox://styles/mapbox/light-v9"
             bounds={fmu.bounds}
-
             // options
             scrollZoom={false}
-
             // viewport
             viewport={operatorsDetailFmus.map}
-            onViewportChange={this.setMapocation}
             // Interaction
             interactiveLayerIds={activeInteractiveLayersIds}
             onClick={this.onClick}
             onHover={this.onHover}
-
             onLoad={() => {
               // Attribution listener
-              document.getElementById('forest-atlas-attribution').addEventListener('click', this.onCustomAttribute);
+              document
+                .getElementById('forest-atlas-attribution')
+                .addEventListener('click', this.onCustomAttribute);
             }}
-
             // Options
-            transformRequest={(url, resourceType) => {
-              if (
-                url.startsWith(process.env.OTP_API)
-              ) {
+            transformRequest={(url) => {
+              if (url.startsWith(process.env.OTP_API)) {
                 return {
                   url,
                   headers: {
                     'Content-Type': 'application/json',
-                    'OTP-API-KEY': process.env.OTP_API_KEY
-                  }
+                    'OTP-API-KEY': process.env.OTP_API_KEY,
+                  },
                 };
               }
 
               return null;
             }}
             mapOptions={{
-              customAttribution: '<a id="forest-atlas-attribution" href="http://cod.forest-atlas.org/?l=en" rel="noopener noreferrer" target="_blank">Forest Atlas</a>'
+              customAttribution:
+                '<a id="forest-atlas-attribution" href="http://cod.forest-atlas.org/?l=en" rel="noopener noreferrer" target="_blank">Forest Atlas</a>',
             }}
           >
-            {map => (
+            {(map) => (
               <Fragment>
                 {/* LAYER MANAGER */}
                 <LayerManager map={map} layers={activeLayers} />
@@ -295,7 +306,7 @@ class OperatorsDetailFMUs extends React.Component {
                 this.props.setOperatorsDetailMapLocation({
                   ...operatorsDetailFmus.map,
                   zoom,
-                  transitionDuration: 500
+                  transitionDuration: 500,
                 });
               }}
             />
@@ -324,7 +335,7 @@ OperatorsDetailFMUs.propTypes = {
   setOperatorsDetailFmuBounds: PropTypes.func,
   setOperatorsDetailAnalysis: PropTypes.func,
   setOperatorsDetailMapInteractions: PropTypes.func,
-  setOperatorsDetailMapHoverInteractions: PropTypes.func
+  setOperatorsDetailMapHoverInteractions: PropTypes.func,
 };
 
 export default injectIntl(
@@ -338,9 +349,12 @@ export default injectIntl(
       popup: getPopup(state, props),
       hoverPopup: getHoverPopup(state, props),
       activeLayers: getActiveLayers(state, props),
-      hoverActiveInteractiveLayers: getActiveHoverInteractiveLayers(state, props),
+      hoverActiveInteractiveLayers: getActiveHoverInteractiveLayers(
+        state,
+        props
+      ),
       activeInteractiveLayersIds: getActiveInteractiveLayersIds(state, props),
-      legendLayers: getLegendLayers(state, props)
+      legendLayers: getLegendLayers(state, props),
     }),
     {
       setOperatorsDetailMapLocation,
@@ -349,7 +363,7 @@ export default injectIntl(
       setOperatorsDetailFmuBounds,
       setOperatorsDetailAnalysis,
       setOperatorsDetailMapInteractions,
-      setOperatorsDetailMapHoverInteractions
+      setOperatorsDetailMapHoverInteractions,
     }
   )(OperatorsDetailFMUs)
 );

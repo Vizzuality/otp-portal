@@ -28,6 +28,7 @@ class LegendComponent extends PureComponent {
     sortable: PropTypes.bool,
     collapsable: PropTypes.bool,
     expanded: PropTypes.bool,
+    toolbar: PropTypes.node,
     intl: intlShape.isRequired,
 
     setLayerSettings: PropTypes.func.isRequired,
@@ -92,7 +93,7 @@ class LegendComponent extends PureComponent {
 
 
   render() {
-    const { intl, className, sortable, collapsable, expanded, layerGroups, setLayerSettings } = this.props;
+    const { intl, className, sortable, collapsable, expanded, layerGroups, toolbar, setLayerSettings } = this.props;
 
     return (
       <div
@@ -114,18 +115,20 @@ class LegendComponent extends PureComponent {
               key={layerGroup.id}
               layerGroup={layerGroup}
               toolbar={
-                <LegendItemToolbar>
-                  {layerGroup.description && <LegendItemButtonInfo />}
-                  <LegendItemButtonOpacity
-                    trackStyle={{
-                      background: '#FFCC00'
-                    }}
-                    handleStyle={{
-                      background: '#FFCC00'
-                    }}
-                  />
-                  <LegendItemButtonVisibility />
-                </LegendItemToolbar>
+                toolbar || (
+                  <LegendItemToolbar>
+                    {layerGroup.description && <LegendItemButtonInfo />}
+                    <LegendItemButtonOpacity
+                      trackStyle={{
+                        background: '#FFCC00'
+                      }}
+                      handleStyle={{
+                        background: '#FFCC00'
+                      }}
+                    />
+                    <LegendItemButtonVisibility />
+                  </LegendItemToolbar>
+                )
                 }
               onChangeInfo={(l => this.onChangeInfo(true, layerGroup.id))}
               onChangeVisibility={((l, visibility) => this.onChangeVisibility(l, visibility, layerGroup.id))}

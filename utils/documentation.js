@@ -7,7 +7,7 @@ import uniqBy from 'lodash/uniqBy';
 // Constants
 import { PALETTE_COLOR_2 } from 'constants/rechart';
 
-const PALETTE = {
+export const PALETTE = {
   doc_not_provided: {
     label: 'Not provided',
     fill: PALETTE_COLOR_2[0].fill,

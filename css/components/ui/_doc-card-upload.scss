@@ -9,7 +9,7 @@
     justify-content: space-between;
 
     li {
-      input[type=file] {
+      input[type='file'] {
         position: absolute;
         visibility: hidden;
         top: -9999px;
@@ -21,13 +21,18 @@
       margin-right: 5px;
     }
 
-    li:nth-child(n+2) {
+    li:nth-child(n + 2) {
       margin-left: 5px;
     }
 
     button {
       white-space: normal;
       height: 100%;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     }
   }
 }

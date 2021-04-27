@@ -38,7 +38,6 @@ class SignUp extends React.Component {
         />
 
         <UserNewForm />
-
       </Layout>
     );
   }
@@ -46,13 +45,16 @@ class SignUp extends React.Component {
 
 SignUp.propTypes = {
   url: PropTypes.shape({}).isRequired,
-  intl: intlShape.isRequired
+  intl: intlShape.isRequired,
 };
 
-
-export default withTracker(withIntl(connect(
-  state => ({
-    countries: state.countries
-  }),
-  { getCountries }
-)(SignUp)));
+export default withTracker(
+  withIntl(
+    connect(
+      (state) => ({
+        countries: state.countries,
+      }),
+      { getCountries }
+    )(SignUp)
+  )
+);

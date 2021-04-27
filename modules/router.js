@@ -4,7 +4,7 @@ const SET_ROUTER = 'SET_ROUTER';
 // REDUCER
 const initialState = {};
 
-export default function (state = initialState, action) {
+export default function Router(state = initialState, action) {
   switch (action.type) {
     case SET_ROUTER:
       return Object.assign({}, state, action.payload);

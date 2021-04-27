@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Link from 'next/link';
 
+import uniq from 'lodash/uniq';
+
 // Services
 import modal from 'services/modal';
 
@@ -36,7 +38,7 @@ class Header extends React.Component {
   }
 
   render() {
-    const { user } = this.props;
+    const { user, operators } = this.props;
 
     return (
       <header className={`c-header ${this.setTheme()}`}>
@@ -90,7 +92,7 @@ class Header extends React.Component {
 
                       <DropdownContent>
                         <ul className="account-dropdown-list">
-                          {user.role === 'operator' &&
+                          {(user.role === 'operator' || user.role === 'holding') &&
                             <li className="account-dropdown-list-item">
                               <Link
                                 href="/operators/edit"
@@ -99,14 +101,21 @@ class Header extends React.Component {
                               </Link>
                             </li>
                           }
-                          {user.role === 'operator' &&
-                            <li className="account-dropdown-list-item">
-                              <Link
-                                href={`/operators/${user.operator}/documentation`}
-                              >
-                                <a>{this.props.intl.formatMessage({ id: 'logged_in.dropdown.documents' })}</a>
-                              </Link>
-                            </li>
+                          {(user.role === 'operator' || user.role === 'holding') && uniq(user.operator_ids).map(id => {
+                            const operator = operators.find(o => +o.id === id);
+
+                            return (
+                              <li className="account-dropdown-list-item">
+                                <Link
+                                  href={`/operators/${id}/documentation`}
+                                >
+                                  <a>
+                                    {operator.name}
+                                  </a>
+                                </Link>
+                              </li>
+                            )
+                          })
                           }
                           {user.role === 'admin' &&
                             <li className="account-dropdown-list-item">
@@ -139,6 +148,7 @@ class Header extends React.Component {
 Header.propTypes = {
   url: PropTypes.object.isRequired,
   user: PropTypes.object,
+  operators: PropTypes.array,
   intl: intlShape.isRequired,
   logout: PropTypes.func
 };
@@ -146,7 +156,8 @@ Header.propTypes = {
 export default injectIntl(connect(
 
   state => ({
-    user: state.user
+    user: state.user,
+    operators: state.operators.data
   }),
   { logout }
 )(Header));

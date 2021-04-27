@@ -18,7 +18,12 @@ function DocumentsCertification(props) {
   const { intl, doc, user, id } = props;
   const { status } = doc;
 
-  const isLogged = ((user && user.role === 'admin') || (user && user.role === 'operator' && user.operator && user.operator.toString() === id));
+  const isLogged =
+    (user && user.role === 'admin') ||
+    (user &&
+      (user.role === 'operator' || user.role === 'holding') &&
+      user.operator_ids &&
+      user.operator_ids.includes(+id));
 
   if (!isLogged || isEmpty(doc)) {
     return null;
@@ -32,11 +37,11 @@ function DocumentsCertification(props) {
             <h3 className="c-title -proximanova -extrabig -uppercase">
               {intl.formatMessage({ id: 'operator-detail.license' })}
             </h3>
-            <p
-              dangerouslySetInnerHTML={{
-                __html: intl.formatHTMLMessage({ id: `operator-detail.license.${status}` })
-              }}
-            />
+            <p>
+              {intl.formatHTMLMessage({
+                id: `operator-detail.license.${status}`,
+              })}
+            </p>
           </header>
 
           <div className="row l-row -equal-heigth">
@@ -46,29 +51,32 @@ function DocumentsCertification(props) {
                 title={intl.formatMessage({ id: 'operator-detail.license' })}
                 properties={{
                   type: 'operator',
-                  id
+                  id,
                 }}
                 layout={{
                   info: false,
-                  annexes: false
+                  annexes: false,
                 }}
                 onChange={() => props.getOperator(id)}
               />
 
               {((user && user.role === 'admin') ||
-                (user && user.role === 'operator' && user.operator && user.operator.toString() === id)) && (
+                (user &&
+                  (user.role === 'operator' || user.role === 'holding') &&
+                  user.operator_ids &&
+                  user.operator_ids.includes(+id))) && (
                   <DocCardUpload
                     {...doc}
                     properties={{
-                      type: 'operator',
-                      id
-                    }}
+                    type: 'operator',
+                    id,
+                  }}
                     buttons={{
-                      add: true,
-                      update: true,
-                      delete: true,
-                      not_required: false
-                    }}
+                    add: true,
+                    update: true,
+                    delete: true,
+                    not_required: false,
+                  }}
                     user={user}
                     onChange={() => props.getOperator(id)}
                   />
@@ -81,22 +89,22 @@ function DocumentsCertification(props) {
   );
 }
 
-DocumentsCertification.defaultProps = {
-
-};
+DocumentsCertification.defaultProps = {};
 
 DocumentsCertification.propTypes = {
   doc: PropTypes.shape({}),
   id: PropTypes.string,
   user: PropTypes.object,
   intl: intlShape.isRequired,
-  getOperator: PropTypes.func
+  getOperator: PropTypes.func,
 };
 
-export default injectIntl(connect(
-  state => ({
-    user: state.user,
-    doc: getContractSignatureDocumentation(state)
-  }),
-  { getOperator }
-)(DocumentsCertification));
+export default injectIntl(
+  connect(
+    (state) => ({
+      user: state.user,
+      doc: getContractSignatureDocumentation(state),
+    }),
+    { getOperator }
+  )(DocumentsCertification)
+);

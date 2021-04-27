@@ -8,7 +8,7 @@ import LayerManager from 'components/map-new/layer-manager';
 import Spinner from 'components/ui/spinner';
 
 // Constants
-import { PALETTE_COLOR_1 } from 'constants/observations';
+import { PALETTE_COLOR_1 } from 'constants/rechart';
 
 
 class MapSubComponent extends React.Component {
@@ -24,6 +24,8 @@ class MapSubComponent extends React.Component {
 
   render() {
     const { id, location, level } = this.props;
+
+    const color = PALETTE_COLOR_1[level] ? `${PALETTE_COLOR_1[level].fill}` : '#000';
 
     return (
       <div className="c-map-sub-component" key={`subcomponent-${id}`}>
@@ -93,7 +95,7 @@ class MapSubComponent extends React.Component {
                           layers: [{
                             type: 'circle',
                             paint: {
-                              'circle-color': `${PALETTE_COLOR_1[level].fill}`,
+                              'circle-color': color,
                               'circle-radius': 10
                             }
                           }]

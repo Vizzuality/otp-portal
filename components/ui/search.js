@@ -140,7 +140,7 @@ class Search extends React.Component {
       const id = item.dataset.id;
 
       const location = {
-        pathname: '/operators-detail',
+        pathname: '/operators/detail',
         query: { id }
       };
       this.onClose();

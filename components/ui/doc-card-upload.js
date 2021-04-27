@@ -1,6 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import moment from 'moment';
+
+import { connect } from 'react-redux';
+
+import { getOperatorDocumentationDate } from 'selectors/operators-detail/documentation';
 
 // Intl
 import { injectIntl, intlShape } from 'react-intl';
@@ -14,13 +19,12 @@ import DocModal from 'components/ui/doc-modal';
 import Spinner from 'components/ui/spinner';
 
 class DocCardUpload extends React.Component {
-
   constructor(props) {
     super(props);
 
     // STATE
     this.state = {
-      deleteLoading: false
+      deleteLoading: false,
     };
 
     // BINDINGS
@@ -31,7 +35,7 @@ class DocCardUpload extends React.Component {
 
     // SERVICE
     this.documentationService = new DocumentationService({
-      authorization: props.user.token
+      authorization: props.user.token,
     });
   }
 
@@ -41,7 +45,7 @@ class DocCardUpload extends React.Component {
    * - triggerNotRequiredFile
    * - triggerEditFile
    * - triggerDeleteFile
-  */
+   */
   triggerAddFile(e) {
     e && e.preventDefault();
 
@@ -51,8 +55,8 @@ class DocCardUpload extends React.Component {
         ...this.props,
         onChange: () => {
           this.props.onChange && this.props.onChange();
-        }
-      }
+        },
+      },
     });
   }
 
@@ -66,8 +70,8 @@ class DocCardUpload extends React.Component {
         notRequired: true,
         onChange: () => {
           this.props.onChange && this.props.onChange();
-        }
-      }
+        },
+      },
     });
   }
 
@@ -81,18 +85,18 @@ class DocCardUpload extends React.Component {
         notRequired: !!this.props.reason,
         onChange: () => {
           this.props.onChange && this.props.onChange();
-        }
-      }
+        },
+      },
     });
   }
 
   triggerDeleteFile(e) {
     e && e.preventDefault();
-    const { id } = this.props;
+    const { docId } = this.props;
 
     this.setState({ deleteLoading: true });
 
-    this.documentationService.deleteDocument(id)
+    this.documentationService.deleteDocument(docId)
       .then(() => {
         this.setState({ deleteLoading: false });
         this.props.onChange && this.props.onChange();
@@ -104,66 +108,106 @@ class DocCardUpload extends React.Component {
   }
 
   render() {
-    const { status, buttons } = this.props;
+    const { status, buttons, date } = this.props;
     const { deleteLoading } = this.state;
+    const currentDate = moment(new Date());
+    const selectedDate = moment(date);
+    const isEditable =
+      currentDate.year() === selectedDate.year() &&
+      currentDate.month() === selectedDate.month() &&
+      currentDate.dayOfYear() === selectedDate.dayOfYear();
+    const btnTooltip = !isEditable
+      ? 'Please select the most recent date on the filters to edit any document'
+      : null;
 
     const classNames = classnames({
-      [`-${status}`]: !!status
+      [`-${status}`]: !!status,
     });
 
     return (
       <div className={`c-doc-card-upload ${classNames}`}>
-        {(status === 'doc_valid' || status === 'doc_invalid' || status === 'doc_pending' || status === 'doc_expired') &&
+        {(status === 'doc_valid' ||
+          status === 'doc_invalid' ||
+          status === 'doc_pending' ||
+          status === 'doc_expired') && (
           <ul>
-            {buttons.update &&
+            {buttons.update && (
               <li>
-                <button onClick={this.triggerEditFile} className="c-button -small -primary">
+                <button
+                  title={btnTooltip}
+                  disabled={!isEditable}
+                  onClick={this.triggerEditFile}
+                  className="c-button -small -primary"
+                >
                   {this.props.intl.formatMessage({ id: 'edit' })}
                 </button>
               </li>
-            }
+            )}
 
-            {buttons.delete &&
+            {buttons.delete && (
               <li>
-                <button onClick={this.triggerDeleteFile} className="c-button -small -primary">
+                <button
+                  title={btnTooltip}
+                  disabled={!isEditable}
+                  onClick={this.triggerDeleteFile}
+                  className="c-button -small -primary"
+                >
                   {this.props.intl.formatMessage({ id: 'delete' })}
-                  <Spinner isLoading={deleteLoading} className="-tiny -transparent" />
+                  <Spinner
+                    isLoading={deleteLoading}
+                    className="-tiny -transparent"
+                  />
                 </button>
               </li>
-            }
+            )}
           </ul>
-        }
-        {status === 'doc_not_provided' &&
+        )}
+        {status === 'doc_not_provided' && (
           <ul>
-            {buttons.add &&
+            {buttons.add && (
               <li>
-                <button onClick={this.triggerAddFile} className="c-button -small -secondary">
+                <button
+                  title={btnTooltip}
+                  disabled={!isEditable}
+                  onClick={this.triggerAddFile}
+                  className="c-button -small -secondary"
+                >
                   {this.props.intl.formatMessage({ id: 'add-file' })}
                 </button>
               </li>
-            }
+            )}
 
-            {buttons.not_required &&
+            {buttons.not_required && (
               <li>
-                <button onClick={this.triggerNotRequiredFile} className="c-button -small -primary">
+                <button
+                  title={btnTooltip}
+                  disabled={!isEditable}
+                  onClick={this.triggerNotRequiredFile}
+                  className="c-button -small -primary"
+                >
                   {this.props.intl.formatMessage({ id: 'notrequired-file' })}
                 </button>
               </li>
-            }
+            )}
           </ul>
-        }
+        )}
 
-        {status === 'doc_not_required' &&
+        {status === 'doc_not_required' && (
           <ul>
-            {buttons.not_required &&
+            {buttons.not_required && (
               <li>
-                <button onClick={this.triggerDeleteFile} className="c-button -small -primary">
+                <button
+                  title={btnTooltip}
+                  disabled={!isEditable}
+                  onClick={this.triggerDeleteFile}
+                  className="c-button -small -primary"
+                >
                   {this.props.intl.formatMessage({ id: 'required-file' })}
                 </button>
               </li>
-            }
+            )}
           </ul>
-        }
+        )}
       </div>
     );
   }
@@ -172,10 +216,11 @@ class DocCardUpload extends React.Component {
 DocCardUpload.propTypes = {
   status: PropTypes.string,
   user: PropTypes.object,
-  id: PropTypes.string,
+  docId: PropTypes.string,
   onChange: PropTypes.func,
   buttons: PropTypes.shape({}),
-  intl: intlShape.isRequired
+  date: PropTypes.string,
+  intl: intlShape.isRequired,
 };
 
 DocCardUpload.defaultProps = {
@@ -183,8 +228,15 @@ DocCardUpload.defaultProps = {
     add: true,
     update: true,
     delete: true,
-    not_required: true
-  }
+    not_required: true,
+  },
 };
 
-export default injectIntl(DocCardUpload)
+export default injectIntl(
+  connect(
+    (state) => ({
+      date: getOperatorDocumentationDate(state),
+    }),
+    {}
+  )(DocCardUpload)
+);

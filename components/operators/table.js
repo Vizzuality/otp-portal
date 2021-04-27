@@ -97,7 +97,7 @@ class OperatorsTable extends React.Component {
                   <td className="-ta-left">
                     <Link
                       href={{
-                        pathname: '/operators-detail',
+                        pathname: '/operators/detail',
                         query: { id: r.id }
                       }}
                       as={`/operators/${r.id}`}

@@ -24,8 +24,8 @@ class OperatorsEdit extends React.Component {
   static async getInitialProps({ store, url }) {
     const { user } = store.getState();
 
-    if (user.operator) {
-      await store.dispatch(getUserOperator(user.operator));
+    if (user.operator_ids) {
+      await store.dispatch(getUserOperator(user.operator_ids[0]));
     }
     return { url };
   }
@@ -36,7 +36,7 @@ class OperatorsEdit extends React.Component {
   componentDidMount() {
     const { user } = this.props;
 
-    if (!user.operator) {
+    if (!user.operator_ids) {
       const location = {
         pathname: '/'
       };
@@ -46,7 +46,7 @@ class OperatorsEdit extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     // // Get user operator
-    if (!nextProps.user.operator) {
+    if (!nextProps.user.operator_ids) {
       const location = {
         pathname: '/'
       };
@@ -57,7 +57,7 @@ class OperatorsEdit extends React.Component {
   render() {
     const { url, user, userOperator } = this.props;
 
-    if (!user.operator) {
+    if (!user.operator_ids) {
       return null;
     }
 

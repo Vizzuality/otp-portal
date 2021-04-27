@@ -30,13 +30,6 @@
   &.-fullwidth { width: 100%; }
   &.-fullheight { height: 100%; }
 
-  &.-clean {
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: none;
-  }
-
   // SIZES
   &.-small {
     padding: 5px 15px 4px;
@@ -140,6 +133,13 @@
     justify-content: center;
     width: 16px;
     height: 16px;
+  }
+
+  &.-clean {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
   }
 
   svg {

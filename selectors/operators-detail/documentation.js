@@ -1,138 +1,104 @@
 import { createSelector } from 'reselect';
-import sortBy from 'lodash/sortBy';
-import compact from 'lodash/compact';
 
 // Get the datasets and filters from state
-const operatorsDetail = state => state.operatorsDetail;
+const operatorsDetail = (state) => state.operatorsDetail;
+const operatorDocumentation = (state) => state.operatorsDetail.documentation;
+export const getFMUs = (state) => state.operatorsDetail.data.fmus;
+export const getOperatorDocumentationFMU = (state) => state.operatorsDetail.fmu;
+export const getOperatorDocumentationDate = (state) =>
+  state.operatorsDetail.date;
 
 // Create a function to compare the current active datatasets and the current datasetsIds
 const getParsedDocumentation = createSelector(
-  operatorsDetail,
-  (_operatorsDetail) => {
-    let countryDocumentation = [];
-    let fmuDocumentation = [];
-
-    if (_operatorsDetail.data['operator-document-countries']) {
-      countryDocumentation = _operatorsDetail.data['operator-document-countries'].map((doc) => {
-        if (doc['required-operator-document-country']) {
-          if (doc['required-operator-document-country']['contract-signature']) {
-            return null;
-          }
-
+  [operatorDocumentation, getOperatorDocumentationFMU],
+  (documentation, fmu) => {
+    return documentation.data
+      .filter((doc) => !doc['required-operator-document']['contract-signature'])
+      .filter((doc) => !fmu || (doc.fmu && doc.fmu.id === fmu.id))
+      .map((doc) => {
+        try {
           return {
             id: doc.id,
-            requiredDocId: doc['required-operator-document-country'].id,
-            url: doc.attachment.url,
-            type: doc.type,
-            title: doc['required-operator-document-country'].name,
-            public: doc.public,
-            explanation: doc['required-operator-document-country'].explanation,
-            category: doc['required-operator-document-country']['required-operator-document-group'].name,
-            categoryPosition: doc['required-operator-document-country']['required-operator-document-group'].position,
-            status: doc.status,
-            reason: doc.reason,
-            startDate: new Date(doc['start-date']).toJSON().slice(0, 10).replace(/-/g, '/'),
-            endDate: new Date(doc['expire-date']).toJSON().slice(0, 10).replace(/-/g, '/'),
-            annexes: doc['operator-document-annexes'] ? doc['operator-document-annexes'] : []
-          };
-        }
-        return null;
-      });
-    }
-
-    if (_operatorsDetail.data['operator-document-fmus']) {
-      fmuDocumentation = _operatorsDetail.data['operator-document-fmus'].map((doc) => {
-        if (doc['required-operator-document-fmu']) {
-          return {
-            id: doc.id,
-            requiredDocId: doc['required-operator-document-fmu'].id,
-            url: doc.attachment.url,
-            type: doc.type,
-            title: doc['required-operator-document-fmu'].name,
-            public: doc.public,
-            explanation: doc['required-operator-document-fmu'].explanation,
-            category: doc['required-operator-document-fmu']['required-operator-document-group'].name,
-            categoryPosition: doc['required-operator-document-fmu']['required-operator-document-group'].position,
-            status: doc.status,
-            reason: doc.reason,
+            docId: doc['operator-document-id'],
             fmu: doc.fmu,
-            startDate: new Date(doc['start-date']).toJSON().slice(0, 10).replace(/-/g, '/'),
-            endDate: new Date(doc['expire-date']).toJSON().slice(0, 10).replace(/-/g, '/'),
-            annexes: doc['operator-document-annexes'] ? doc['operator-document-annexes'] : []
-          };
-        }
-        return null;
-      });
-
-      return [...compact(fmuDocumentation), ...compact(countryDocumentation)];
-    }
-
-    return [];
-  }
-);
-
-
-// Create a function to compare the current active datatasets and the current datasetsIds
-const getAllParsedDocumentation = createSelector(
-  operatorsDetail,
-  (_operatorsDetail) => {
-    const documentation = _operatorsDetail.documentation.data;
-
-    if (documentation && !!documentation.length) {
-      return compact(sortBy(documentation.filter(d => d.status !== 'doc_not_provided').map((doc) => {
-        if (doc['required-operator-document']) {
-          return {
-            id: doc.id,
             requiredDocId: doc['required-operator-document'].id,
+            url: doc.attachment?.url,
             type: doc.type,
+            source: doc['source-type'],
+            sourceInfo: doc['source-info'],
             title: doc['required-operator-document'].name,
-            category: doc['required-operator-document']['required-operator-document-group'].name,
-            categoryPosition: doc['required-operator-document']['required-operator-document-group'].position,
+            public: doc.public,
+            explanation: doc['required-operator-document'].explanation,
+            category:
+              doc['required-operator-document'][
+                'required-operator-document-group'
+              ].name,
+            categoryPosition:
+              doc['required-operator-document'][
+                'required-operator-document-group'
+              ].position,
             status: doc.status,
-            startDate: new Date(doc['start-date']),
+            reason: doc.reason,
+            startDate: new Date(doc['start-date'])
+              .toJSON()
+              .slice(0, 10)
+              .replace(/-/g, '/'),
             endDate: new Date(doc['expire-date'])
+              .toJSON()
+              .slice(0, 10)
+              .replace(/-/g, '/'),
+            annexes: doc['operator-document-annexes']
+              ? doc['operator-document-annexes']
+              : [],
           };
+        } catch (error) {
+          return null;
         }
-
-        return null;
-      }), 'title'));
-    }
-
-    return [];
+      });
   }
 );
-
 
 const getContractSignatureDocumentation = createSelector(
-  operatorsDetail,
-  (_operatorsDetail) => {
+  operatorDocumentation,
+  (documentation) => {
     let contractSignature = {};
 
-    if (_operatorsDetail.data['operator-document-countries']) {
-      const doc = _operatorsDetail.data['operator-document-countries'].find((d) => {
-        const required = d['required-operator-document-country'];
-
-        if (!required) return false;
-
-        return required['contract-signature'];
-      });
+    if (documentation.data) {
+      const doc = documentation.data.find(
+        (d) => d['required-operator-document']['contract-signature']
+      );
 
       if (doc) {
         contractSignature = {
           id: doc.id,
-          requiredDocId: doc['required-operator-document-country'].id,
-          url: doc.attachment.url,
+          docId: doc['operator-document-id'],
+          requiredDocId: doc['required-operator-document'].id,
+          url: doc.attachment?.url,
           type: doc.type,
           public: doc.public,
-          title: doc['required-operator-document-country'].name,
-          explanation: doc['required-operator-document-country'].explanation,
-          category: doc['required-operator-document-country']['required-operator-document-group'].name,
-          categoryPosition: doc['required-operator-document-country']['required-operator-document-group'].position,
+          title: doc['required-operator-document'].name,
+          explanation: doc['required-operator-document'].explanation,
+          category:
+            doc['required-operator-document'][
+              'required-operator-document-group'
+            ].name,
+          categoryPosition:
+            doc['required-operator-document'][
+              'required-operator-document-group'
+            ].position,
           status: doc.status,
           reason: doc.reason,
-          startDate: new Date(doc['start-date']).toJSON().slice(0, 10).replace(/-/g, '/'),
-          endDate: new Date(doc['expire-date']).toJSON().slice(0, 10).replace(/-/g, '/'),
-          annexes: doc['operator-document-annexes'] ? doc['operator-document-annexes'] : []
+          startDate: new Date(doc['start-date'])
+            .toJSON()
+            .slice(0, 10)
+            .replace(/-/g, '/'),
+          endDate: new Date(doc['expire-date'])
+            .toJSON()
+            .slice(0, 10)
+            .replace(/-/g, '/'),
+          annexes: doc['operator-document-annexes']
+            ? doc['operator-document-annexes']
+            : [],
         };
       }
     }
@@ -141,4 +107,4 @@ const getContractSignatureDocumentation = createSelector(
   }
 );
 
-export { getParsedDocumentation, getAllParsedDocumentation, getContractSignatureDocumentation };
+export { getParsedDocumentation, getContractSignatureDocumentation };

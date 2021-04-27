@@ -10,7 +10,7 @@ import { HELPERS_OBS } from 'utils/observations';
 import { injectIntl, intlShape } from 'react-intl';
 
 // Constants
-import { LEGEND_SEVERITY } from 'constants/rechart';
+import { PALETTE_COLOR_1, LEGEND_SEVERITY } from 'constants/rechart';
 
 // Components
 import Select from 'react-select';
@@ -83,12 +83,13 @@ class TotalObservationsByOperatorByFMU extends React.Component {
                     style={{ width: `${(length / max) * 100}%` }}
                   >
                     {Object.keys(groupedBySeverity).sort((a, b) => b - a).map((severity) => {
+                      if (severity === 'null') return null;
                       const lengthSeverity = groupedBySeverity[severity].length;
 
                       return (
                         <li
                           key={severity}
-                          style={{ width: `${(lengthSeverity / length) * 100}%` }}
+                          style={{ width: `${(lengthSeverity / length) * 100}%`, background: PALETTE_COLOR_1[severity].fill }}
                           className={`obo-observations-list-item -severity-${severity}`}
                         >
                           {i === 0 && lengthSeverity}

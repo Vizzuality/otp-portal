@@ -1,125 +1,70 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import sortBy from 'lodash/sortBy';
-import scrollTo from 'animated-scroll-to';
-import classnames from 'classnames';
 
-// Redux
-import { connect } from 'react-redux';
-
-import { getOperator } from 'modules/operators-detail';
-
-// Utils
-import { HELPERS_DOC } from 'utils/documentation';
+import { injectIntl, intlShape } from 'react-intl';
 
 // Components
 import DocCard from 'components/ui/doc-card';
 import DocCardUpload from 'components/ui/doc-card-upload';
-import { StickyContainer, Sticky } from 'react-sticky';
 
+function DocumentsByFMU({ documents, user, id, getOperator, intl }) {
+  return (
+    <div className="c-doc-gallery-fmu-docs">
+      <h3>{intl.formatMessage({ id: 'fmus-documents' })}:</h3>
+      {Object.values(documents).map((docs) => {
+        const FMUname = docs[0].fmu.name;
 
-class DocumentsByFMU extends React.Component {
-  componentDidUpdate() {
-    const { data } = this.props;
-    const { fmuId } = this.props.query;
-
-    if (fmuId && data.length) scrollTo(this[fmuId]);
-  }
-
-  render() {
-    const { data, user, id } = this.props;
-    const groupedByFmu = HELPERS_DOC.getGroupedByFmu(data);
-
-    return (
-      <div className="c-accordion">
-        {Object.keys(groupedByFmu).map((fmu) => {
-          const groupedByCategory = HELPERS_DOC.getGroupedByCategory(groupedByFmu[fmu]);
-
-          return (
-            <div key={fmu} id={fmu} className="accordion-item" ref={(item) => { this[fmu] = item; }}>
-              <StickyContainer>
-                <Sticky>
-                  {({ style, isSticky }) => (
-                    <h3
-                      className={classnames({
-                        'c-title -huge -uppercase accordion-title': true,
-                        '-sticky': isSticky
-                      })}
-                      style={style}
-                    >
-                      {HELPERS_DOC.getFMUName(data, fmu)}
-                    </h3>
-                  )}
-                </Sticky>
-
-
-                <ul className="c-doc-gallery accordion-content">
-                  {Object.keys(groupedByCategory).map(category => (
-                    <li
-                      key={category}
-                      className="doc-gallery-item"
-                    >
-                      <header>
-                        <h3 className="c-title -proximanova -extrabig -uppercase">{category}</h3>
-                      </header>
-
-                      <div className="row l-row -equal-heigth">
-                        {sortBy(groupedByCategory[category], doc => doc.title).map(card => (
-                          <div
-                            key={card.id}
-                            className="columns small-12 medium-4"
-                          >
-                            <DocCard
-                              {...card}
-                              properties={{
-                                type: 'operator',
-                                id
-                              }}
-                              onChange={() => this.props.getOperator(id)}
-                            />
-
-                            {((user && user.role === 'admin') ||
-                            (user && user.role === 'operator' && user.operator && user.operator.toString() === id)) &&
-                              <DocCardUpload
-                                {...card}
-                                properties={{
-                                  type: 'operator',
-                                  id
-                                }}
-                                user={user}
-                                onChange={() => this.props.getOperator(id)}
-                              />
-                            }
-                          </div>
-                          ))}
-                      </div>
-                    </li>
-                    ))}
-                </ul>
-              </StickyContainer>
+        return (
+          <div className="fmu-item" key={docs[0].fmu.name}>
+            <div className="doc-gallery-item-header">
+              <div className="doc-by-category-desc">
+                <h4>{FMUname}</h4>
+              </div>
             </div>
-          );
-        })}
-      </div>
-    );
-  }
+
+            <div className="row l-row -equal-heigth">
+              {sortBy(docs, (doc) => doc.title).map((card) => (
+                <div key={card.id} className="columns small-12 medium-4">
+                  <DocCard
+                    {...card}
+                    properties={{
+                      type: 'operator',
+                      id,
+                    }}
+                    onChange={() => getOperator(id)}
+                  />
+                  {((user && user.role === 'admin') ||
+                    (user &&
+                      (user.role === 'operator' || user.role === 'holding') &&
+                      user.operator_ids &&
+                      user.operator_ids.includes(+id))) && (
+                      <DocCardUpload
+                        {...card}
+                        properties={{
+                        type: 'operator',
+                        id,
+                      }}
+                        user={user}
+                        onChange={() => getOperator(id)}
+                      />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
-DocumentsByFMU.defaultProps = {
-  data: []
-};
-
 DocumentsByFMU.propTypes = {
-  getOperator: PropTypes.func,
-  data: PropTypes.array,
-  id: PropTypes.string,
+  documents: PropTypes.object,
   user: PropTypes.object,
-  query: PropTypes.object
+  id: PropTypes.string,
+  getOperator: PropTypes.func,
+  intl: intlShape
 };
 
-export default connect(
-  state => ({
-    user: state.user
-  }),
-  { getOperator }
-)(DocumentsByFMU);
+export default injectIntl(DocumentsByFMU);

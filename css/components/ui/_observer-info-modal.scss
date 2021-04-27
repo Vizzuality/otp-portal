@@ -1,0 +1,22 @@
+
+.c-observer-info-modal {
+  padding: $space-1 * 4;
+
+  .observer-info-modal--content {
+    display: flex;
+    justify-content: space-between;
+
+    > * {
+      width: 47.5%;
+    }
+  }
+
+  .observer-info-modal--list-item {
+    display: flex;
+    font-size: $font-size-default;
+
+    dd {
+      margin-left: $space-1;
+    }
+  }
+}

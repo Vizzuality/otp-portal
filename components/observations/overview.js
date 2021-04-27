@@ -25,7 +25,7 @@ function Overview(props) {
 
 Overview.propTypes = {
   parsedObservations: PropTypes.array,
-  intl: intlShape.isRequired
+  intl: intlShape.isRequired,
 };
 
 export default injectIntl(Overview);

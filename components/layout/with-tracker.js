@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
   /* eslint-disable global-require */
   GA = require('react-ga');
   /* eslint-enable global-require */
-  GA.initialize('UA-48182293-6', { debug: true });
+  GA.initialize('UA-48182293-6', { debug: false });
 }
 
 const withTracker = (Page, options = {}) => {
@@ -17,7 +17,7 @@ const withTracker = (Page, options = {}) => {
       category: page,
       action: 'Navigation',
       label: page,
-      ...options
+      ...options,
     });
     GA.pageview(page);
   };
@@ -52,11 +52,10 @@ const withTracker = (Page, options = {}) => {
   };
 
   HOC.propTypes = {
-    url: PropTypes.object
+    url: PropTypes.object,
   };
 
   return HOC;
 };
-
 
 export default withTracker;

@@ -1,8 +1,8 @@
 const PALETTE_COLOR_1 = [
-  { fill: '#e98300' },
-  { fill: '#333333' },
-  { fill: '#005b23' },
-  { fill: '#9B9B9B' }
+  { fill: '#D2CFCF' },
+  { fill: '#2D9A56' },
+  { fill: '#31312E' },
+  { fill: '#E98300' }
 ];
 const PALETTE_COLOR_2 = [
   { fill: '#e98300', stroke: '#e98300' },
@@ -44,20 +44,20 @@ const LEGEND_CHRONOLOGICAL = {
 const LEGEND_SEVERITY = {
   title: 'SEVERITY',
   list: [{
-    fill: PALETTE_COLOR_1[0].fill,
-    stroke: PALETTE_COLOR_1[0].fill,
+    fill: PALETTE_COLOR_1[3].fill,
+    stroke: PALETTE_COLOR_1[3].fill,
     label: 'high'
-  }, {
-    fill: PALETTE_COLOR_1[1].fill,
-    stroke: PALETTE_COLOR_1[1].fill,
-    label: 'medium'
   }, {
     fill: PALETTE_COLOR_1[2].fill,
     stroke: PALETTE_COLOR_1[2].fill,
+    label: 'medium'
+  }, {
+    fill: PALETTE_COLOR_1[1].fill,
+    stroke: PALETTE_COLOR_1[1].fill,
     label: 'low'
   }, {
-    fill: PALETTE_COLOR_1[3].fill,
-    stroke: PALETTE_COLOR_1[3].fill,
+    fill: PALETTE_COLOR_1[0].fill,
+    stroke: PALETTE_COLOR_1[0].fill,
     label: 'unknown'
   }]
 };

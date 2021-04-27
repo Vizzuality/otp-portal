@@ -16,9 +16,12 @@ import Spinner from 'components/ui/spinner';
 import ChartLegend from 'components/ui/chart-legend';
 
 class DocumentsStackedTimeline extends React.Component {
-  state = {
-    loading: true
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true,
+    };
+  }
 
   componentDidMount() {
     const { id } = this.props;
@@ -48,14 +51,17 @@ class DocumentsStackedTimeline extends React.Component {
     }
 
     this.setState({
-      loading: false
+      loading: false,
     });
   }
 
   render() {
     return (
       <div className="c-stacked-timeline">
-        <Spinner className="-transparent -small" isLoading={this.state.loading} />
+        <Spinner
+          className="-transparent -small"
+          isLoading={this.state.loading}
+        />
 
         <ChartLegend
           list={LEGEND_CHRONOLOGICAL.list}
@@ -70,12 +76,12 @@ class DocumentsStackedTimeline extends React.Component {
 DocumentsStackedTimeline.propTypes = {
   id: PropTypes.string,
   documentation: PropTypes.array,
-  getDocuments: PropTypes.func
+  getDocuments: PropTypes.func,
 };
 
 export default connect(
-  state => ({
-    documentation: getAllParsedDocumentation(state)
+  (state) => ({
+    documentation: getAllParsedDocumentation(state),
   }),
   { getDocuments }
 )(DocumentsStackedTimeline);

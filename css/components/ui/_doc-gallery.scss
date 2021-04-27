@@ -3,20 +3,101 @@
   margin: 0;
   list-style: none;
 
-  &:first-child { padding-top: 0; }
-  &:last-child { padding-bottom: 0; }
+  &:first-child {
+    padding-top: 0;
+  }
 
-  h3 {
-    margin: 0 0 $space-1 * 3;
+  &:last-child {
+    padding-bottom: 0;
   }
 
   .doc-gallery-item {
-    margin: $space-1 * 6 0 0;
-    &:first-child { margin-top: 0; }
+    border-top: 1px solid $border-color-1;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    .doc-gallery-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .doc-by-category-btn {
+        height: 30px;
+        min-width: 100px;
+        border: 1px solid rgba(0, 0, 0, 0.3);
+        border-radius: 3px;
+        background-color: transparent;
+        color: rgba(0, 0, 0, 0.8);
+        font-size: 16px;
+        letter-spacing: 2px;
+        line-height: 26px;
+        text-align: center;
+        text-transform: uppercase;
+        cursor: pointer;
+
+        &.open {
+          color: #f7f6ed;
+          background-color: rgba(0, 0, 0, 0.8);
+        }
+      }
+
+      h3 {
+        margin: 0;
+      }
+    }
+
+    .doc-gallery-producer-docs,
+    .c-doc-gallery-fmu-docs {
+      margin-top: $space-1 * 4;
+
+      & > h3 {
+        color: rgba(0, 0, 0, 0.8);
+        font-size: 16px;
+        font-weight: 400;
+        font-family: $font-family-proximanova;
+        letter-spacing: 0.3px;
+        line-height: 19px;
+      }
+    }
+
+    .fmu-item {
+      padding: 15px 0;
+      border-top: 1px dashed #c4c4c4;
+
+      .doc-by-category-desc h4 {
+        height: 20px;
+        color: rgba(0, 0, 0, 0.8);
+        font-family: Georgia;
+        font-weight: 400;
+        font-size: 14px;
+        letter-spacing: 0;
+        line-height: 20px;
+        margin-top: 5px;
+      }
+    }
   }
 
-  .columns {
-    // If you want all the cards with the same height uncomment this
-    // display: flex;
+  // CHART
+  .doc-by-category-chart {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 0 0 50%;
+    margin: 0;
+    margin-bottom: $space-1;
+    font-size: 14px;
+
+    span {
+      white-space: nowrap;
+    }
+  }
+
+  .doc-by-category-bar {
+    display: flex;
+    height: 7px;
+    // width: 215px;
+    margin-right: $space-1;
   }
 }

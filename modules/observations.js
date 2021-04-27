@@ -15,11 +15,11 @@ const GET_OBSERVATIONS_TOTAL_SIZE = 'GET_OBSERVATIONS_TOTAL_SIZE';
 const GET_OBSERVATIONS_ERROR = 'GET_OBSERVATIONS_ERROR';
 const GET_OBSERVATIONS_LOADING = 'GET_OBSERVATIONS_LOADING';
 
-const GET_FILTERS_SUCCESS = 'GET_FILTERS_SUCCESS';
-const GET_FILTERS_ERROR = 'GET_FILTERS_ERROR';
-const GET_FILTERS_LOADING = 'GET_FILTERS_LOADING';
-const SET_FILTERS = 'SET_FILTERS';
-const SET_ACTIVE_COLUMNS = 'SET_ACTIVE_COLUMNS';
+const GET_FILTERS_OBSERVATIONS_SUCCESS = 'GET_FILTERS_OBSERVATIONS_SUCCESS';
+const GET_FILTERS_OBSERVATIONS_ERROR = 'GET_FILTERS_OBSERVATIONS_ERROR';
+const GET_FILTERS_OBSERVATIONS_LOADING = 'GET_FILTERS_OBSERVATIONS_LOADING';
+const SET_FILTERS_OBSERRVATIONS = 'SET_FILTERS_OBSERRVATIONS';
+const SET_ACTIVE_COLUMNS_OBSERVATIONS = 'SET_ACTIVE_COLUMNS_OBSERVATIONS';
 const SET_OBSERVATIONS_MAP_LOCATION = 'SET_OBSERVATIONS_MAP_LOCATION';
 const SET_OBSERVATIONS_MAP_CLUSTER = 'SET_OBSERVATIONS_MAP_CLUSTER';
 
@@ -32,15 +32,15 @@ const initialState = {
   loading: false,
   error: false,
   map: {
-    zoom: 4,
-    latitude: 0,
-    longitude: 20
+    zoom: 5,
+    latitude: -1.45,
+    longitude: 15
   },
   cluster: {},
   filters: {
     data: {
       observation_type: [],
-      country_id: process.env.OTP_COUNTRIES_IDS,
+      country_id: [],
       fmu_id: [],
       years: [],
       observer_id: [],
@@ -72,25 +72,25 @@ export default function (state = initialState, action) {
     case GET_OBSERVATIONS_LOADING:
       return Object.assign({}, state, { loading: true, error: false });
     // Filters
-    case GET_FILTERS_SUCCESS: {
+    case GET_FILTERS_OBSERVATIONS_SUCCESS: {
       const newFilters = Object.assign({}, state.filters, {
         options: action.payload, loading: false, error: false
       });
       return Object.assign({}, state, { filters: newFilters });
     }
-    case GET_FILTERS_ERROR: {
+    case GET_FILTERS_OBSERVATIONS_ERROR: {
       const newFilters = Object.assign({}, state.filters, { error: true, loading: false });
       return Object.assign({}, state, { filters: newFilters });
     }
-    case GET_FILTERS_LOADING: {
+    case GET_FILTERS_OBSERVATIONS_LOADING: {
       const newFilters = Object.assign({}, state.filters, { loading: true, error: false });
       return Object.assign({}, state, { filters: newFilters });
     }
-    case SET_FILTERS: {
+    case SET_FILTERS_OBSERRVATIONS: {
       const newFilters = Object.assign({}, state.filters, { data: action.payload });
       return Object.assign({}, state, { filters: newFilters });
     }
-    case SET_ACTIVE_COLUMNS: {
+    case SET_ACTIVE_COLUMNS_OBSERVATIONS: {
       return Object.assign({}, state, { columns: action.payload });
     }
     case SET_OBSERVATIONS_MAP_LOCATION: {
@@ -162,7 +162,7 @@ export function getFilters() {
     const { language } = getState();
 
     // Waiting for fetch from server -> Dispatch loading
-    dispatch({ type: GET_FILTERS_LOADING });
+    dispatch({ type: GET_FILTERS_OBSERVATIONS_LOADING });
 
     const lang = language === 'zh' ? 'zh-CN' : language;
 
@@ -180,14 +180,14 @@ export function getFilters() {
       .then((filters) => {
         // Fetch from server ok -> Dispatch observations
         dispatch({
-          type: GET_FILTERS_SUCCESS,
+          type: GET_FILTERS_OBSERVATIONS_SUCCESS,
           payload: parseObjectSelectOptions(filters)
         });
       })
       .catch((err) => {
         // Fetch from server ko -> Dispatch error
         dispatch({
-          type: GET_FILTERS_ERROR,
+          type: GET_FILTERS_OBSERVATIONS_ERROR,
           payload: err.message
         });
       });
@@ -224,6 +224,7 @@ export function getDownload() {
       .then((response) => {
         if (response.ok) return response.text();
         toastr.error(this.props.intl.formatMessage({ id: 'Error' }), this.props.intl.formatMessage({ id: 'Oops! There was an error, try again' }));
+        return null;
       })
       .then((csv) => {
         if (csv) {
@@ -240,7 +241,7 @@ export function getDownload() {
 export function setActiveColumns(activeColumns) {
   return (dispatch) => {
     dispatch({
-      type: SET_ACTIVE_COLUMNS,
+      type: SET_ACTIVE_COLUMNS_OBSERVATIONS,
       payload: activeColumns
     });
   };
@@ -252,13 +253,8 @@ export function setFilters(filter) {
     const key = Object.keys(filter)[0];
     newFilters[key] = filter[key];
 
-    // default countries
-    if (key === 'country_id' && !filter[key].length) {
-      newFilters[key] = process.env.OTP_COUNTRIES_IDS;
-    }
-
     dispatch({
-      type: SET_FILTERS,
+      type: SET_FILTERS_OBSERRVATIONS,
       payload: newFilters
     });
   };
@@ -293,7 +289,7 @@ export function getObservationsUrl(url) {
       };
 
       dispatch({
-        type: SET_FILTERS,
+        type: SET_FILTERS_OBSERRVATIONS,
         payload
       });
     }

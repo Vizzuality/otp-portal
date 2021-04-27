@@ -1,0 +1,19 @@
+.c-observation-filters {
+  background-color: $color-secondary;
+  padding: 30px 30px 65px;
+
+  .c-title {
+    margin-top: 0;
+  }
+
+  .field {
+    .title {
+      font-family: $font-family-georgia;
+      color: $color-white;
+      margin-bottom: 2px;
+      font-size: $font-size-big;
+      line-height: 26px;
+      font-weight: normal;
+    }
+  }
+}

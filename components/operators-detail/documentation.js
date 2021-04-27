@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import Router from 'next/router';
+import sortBy from 'lodash/sortBy';
 
 // Intl
 import { injectIntl, intlShape } from 'react-intl';
@@ -10,128 +9,115 @@ import { injectIntl, intlShape } from 'react-intl';
 import { HELPERS_DOC } from 'utils/documentation';
 
 // Components
-import StaticTabs from 'components/ui/static-tabs';
-import DocumentsProvided from 'components/operators-detail/documentation/documents-provided';
 import DocumentsCertification from 'components/operators-detail/documentation/documents-certification';
+import DocumentsProvided from 'components/operators-detail/documentation/documents-provided';
 import DocumentsByOperator from 'components/operators-detail/documentation/documents-by-operator';
-import DocumentsByFMU from 'components/operators-detail/documentation/documents-by-fmu';
-import DocumentsStackedTimeline from 'components/operators-detail/documentation/documents-by-stacked-timeline';
+import DocumentsTimeline from 'components/operators-detail/documentation/documents-timeline';
+import DocumentStatusBar from 'components/operators-detail/documentation/documents-bars';
+import DocumentsFilter from 'components/operators-detail/documentation/documents-filter';
 
-class OperatorsDetailDocumentation extends React.Component {
+function OperatorsDetailDocumentation({
+  operatorsDetail,
+  operatorDocumentation,
+  operatorTimeline,
+  url,
+  intl,
+}) {
+  const docsGroupedByCategory = HELPERS_DOC.getGroupedByCategory(
+    operatorDocumentation
+  );
+  // Maximum amount of documents in a category, other bars will be proportional to it
+  const maxDocs = Object.values(docsGroupedByCategory)
+    .map((categoryDocs) => categoryDocs.length)
+    .sort((a, b) => a - b)
+    .reverse()[0];
 
-  constructor(props) {
-    super(props);
+  const filteredData = operatorDocumentation.filter(
+    (d) => d.status !== 'doc_not_required'
+  );
+  const groupedByStatusChart = HELPERS_DOC.getGroupedByStatusChart(
+    filteredData
+  );
+  const validDocs = groupedByStatusChart.find(
+    (status) => status.id === 'doc_valid'
+  );
 
-    this.state = {
-      tab: this.props.url.query.subtab || 'operator-documents'
-    };
+  return (
+    <div>
+      <div className="c-section">
+        <div className="l-container">
+          <DocumentsFilter showDate showFMU />
 
-    this.triggerChangeTab = this.triggerChangeTab.bind(this);
-  }
+          <DocumentsCertification
+            // Publication authorization
+            id={url.query.id}
+          />
 
-  triggerChangeTab(tab) {
-    const { id } = this.props.url.query;
+          <article className="c-article">
+            <header>
+              {/* X % valid documents available */}
+              <h2 className="c-title">
+                {intl.formatMessage(
+                  {
+                    id: 'operator-detail.documents.title',
+                  },
+                  {
+                    percentage: validDocs
+                      ? validDocs.value
+                      : 0,
+                  }
+                )}
+              </h2>
+            </header>
 
-    const location = {
-      pathname: '/operators-detail',
-      query: {
-        id,
-        tab: 'documentation',
-        subtab: tab
-      }
-    };
-
-    Router.replace(location, `/operators/${id}/documentation?subtab=${tab}`);
-    this.setState({ tab });
-  }
-
-  render() {
-    const { operatorsDetail, operatorDocumentation, url } = this.props;
-    const groupedByType = HELPERS_DOC.getGroupedByType(operatorDocumentation);
-    const groupedByForestType = HELPERS_DOC.getGroupedByForestType(operatorDocumentation);
-
-    return (
-      <div>
-        <div className="c-section">
-          <div className="l-container">
-            <DocumentsCertification
-              id={url.query.id}
-            />
-
-            <article className="c-article">
-              <header>
-                <h2 className="c-title">
-                  {this.props.intl.formatMessage({
-                    id: 'operator-detail.documents.title'
-                  }, {
-                    percentage: HELPERS_DOC.getPercentage(operatorsDetail.data)
-                  })}
-                </h2>
-              </header>
-
-              <div className="content">
-                <DocumentsProvided data={operatorDocumentation} />
+            <div className="content c-documentation-pie-chart">
+              {/* Pie chart */}
+              <DocumentsProvided
+                data={filteredData}
+                groupedByStatusChart={groupedByStatusChart}
+              />
+              <div className="pie-categories">
+                {Object.entries(docsGroupedByCategory).map(
+                  ([category, docs]) => (
+                    <DocumentStatusBar
+                      category={category}
+                      docs={docs}
+                      maxDocs={maxDocs}
+                    />
+                  )
+                )}
               </div>
-            </article>
-          </div>
-        </div>
+            </div>
+          </article>
 
-        <StaticTabs
-          options={[
-            {
-              label: this.props.intl.formatMessage({ id: 'operator-documents' }),
-              value: 'operator-documents'
-            },
-            ...Object.keys(groupedByForestType).map(t => (
-              { label: `${this.props.intl.formatMessage({ id: `${(t || 'fmus')}-documents` })}`, value: t }
-            )),
-            {
-              label: this.props.intl.formatMessage({ id: 'chronological-view' }),
-              value: 'chronological-view'
-            }
-          ]}
-          defaultSelected={this.state.tab}
-          onChange={this.triggerChangeTab}
-        />
-
-        <div className="c-section">
-          <div className="l-container">
-            {this.state.tab === 'operator-documents' &&
-              <DocumentsByOperator data={groupedByType['operator-document-countries']} id={url.query.id} />
-            }
-
-            {Object.keys(groupedByForestType).map((k) => {
-              if (this.state.tab === k) {
-                return (
-                  <DocumentsByFMU
-                    key={k}
-                    group="fmu"
-                    data={groupedByForestType[k]}
-                    id={url.query.id}
-                    query={url.query}
-                  />
-                );
-              }
-
-              return null;
-            })}
-
-            {this.state.tab === 'chronological-view' && groupedByType['operator-document-countries'] &&
-              <DocumentsStackedTimeline data={groupedByType['operator-document-countries']} id={url.query.id} />
-            }
-
-          </div>
+          {/* Timeline chart */}
+          {operatorTimeline &&
+            operatorTimeline.length &&
+            operatorTimeline.length > 1 && (
+              <DocumentsTimeline timelineData={operatorTimeline} />
+            )}
         </div>
       </div>
-    );
-  }
+
+      <div className="c-section">
+        <div className="l-container">
+          {/* Document sections with cards */}
+          <DocumentsByOperator
+            groupedByCategory={docsGroupedByCategory}
+            id={url.query.id}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 OperatorsDetailDocumentation.propTypes = {
   operatorsDetail: PropTypes.object,
   operatorDocumentation: PropTypes.array,
+  operatorTimeline: PropTypes.array,
   url: PropTypes.object,
-  intl: intlShape.isRequired
+  intl: intlShape.isRequired,
 };
 
 export default injectIntl(OperatorsDetailDocumentation);

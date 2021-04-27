@@ -59,12 +59,15 @@
 @import 'components/ui/doc-by-category';
 @import 'components/ui/doc-card';
 @import 'components/ui/doc-card-upload';
+@import 'components/ui/doc-filters';
 @import 'components/ui/doc-gallery';
 @import 'components/ui/doc-license-agreement';
+@import 'components/ui/doc-operator-detail';
 @import 'components/ui/doc-provided';
 @import 'components/ui/doc-notrequired-modal';
 @import 'components/ui/fa-attributions';
 @import 'components/ui/filters';
+@import 'components/ui/filters-observations';
 @import 'components/ui/filters-operators';
 @import 'components/ui/fmus-checkbox';
 @import 'components/ui/fmu-card';
@@ -81,6 +84,7 @@
 @import 'components/ui/no-data';
 @import 'components/ui/observations-by-operator';
 @import 'components/ui/observations-by-illegality';
+@import 'components/ui/observer-info-modal';
 @import 'components/ui/options-table';
 @import 'components/ui/partner-card';
 @import 'components/ui/ranking';
@@ -97,18 +101,22 @@
 @import 'components/ui/select';
 @import 'components/ui/stacked-timeline';
 
+// Documents' database
+// TODO: reorganize?
+@import 'components/database/table';
+
 // form
-@import "components/form/form";
-@import "components/form/field";
-@import "components/form/field-container";
-@import "components/form/field-buttons";
-@import "components/form/file";
-@import "components/form/file-image";
-@import "components/form/checkbox";
-@import "components/form/radio";
-@import "components/form/select";
-@import "components/form/token";
-@import "components/form/toggle-switch";
+@import 'components/form/form';
+@import 'components/form/field';
+@import 'components/form/field-container';
+@import 'components/form/field-buttons';
+@import 'components/form/file';
+@import 'components/form/file-image';
+@import 'components/form/checkbox';
+@import 'components/form/radio';
+@import 'components/form/select';
+@import 'components/form/token';
+@import 'components/form/toggle-switch';
 
 // html
-@import "components/html/html";
+@import 'components/html/html';

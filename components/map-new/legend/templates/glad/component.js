@@ -2,12 +2,16 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
+// Intl
+import { injectIntl, intlShape } from 'react-intl';
+
 import Datepicker from 'components/ui/datepicker';
 
 class LegendTemplateGLAD extends PureComponent {
   static propTypes = {
     activeLayer: PropTypes.shape({}).isRequired,
-    setLayerSettings: PropTypes.func.isRequired
+    setLayerSettings: PropTypes.func.isRequired,
+    intl: intlShape
   }
 
   onDateChange = (value, who) => {
@@ -30,7 +34,7 @@ class LegendTemplateGLAD extends PureComponent {
   }
 
   render() {
-    const { activeLayer } = this.props;
+    const { activeLayer, intl } = this.props;
     const { decodeParams, timelineParams } = activeLayer;
 
     const { startDate, trimEndDate } = decodeParams;
@@ -45,7 +49,7 @@ class LegendTemplateGLAD extends PureComponent {
         {typeof window !== 'undefined' &&
           <>
             <span>
-              From
+              {intl.formatMessage({ id: 'from' })}
             </span>
 
             <Datepicker
@@ -67,7 +71,7 @@ class LegendTemplateGLAD extends PureComponent {
             />
 
             <span>
-              to
+              {intl.formatMessage({ id: 'to' })}
             </span>
 
             <Datepicker
@@ -94,4 +98,4 @@ class LegendTemplateGLAD extends PureComponent {
   }
 }
 
-export default LegendTemplateGLAD;
+export default injectIntl(LegendTemplateGLAD);

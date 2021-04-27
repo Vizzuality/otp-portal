@@ -134,7 +134,7 @@ class LayerManagerComponent extends PureComponent {
           }
         }}
       >
-        {!!layers && layers.map((l, i) => {
+        {!!layers && layers.map((l) => {
           return (
             <Layer
               key={l.id}

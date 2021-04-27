@@ -11,7 +11,7 @@ const getParsedObservations = createSelector(
       const observations = _countriesDetail.observations.data.map(obs => ({
         id: obs.id,
         details: obs.details,
-        severity: obs.severity.level,
+        severity: obs.severity && obs.severity.level,
         category: obs.subcategory.category.name,
         illegality: obs.subcategory.name,
         date: new Date(obs['publication-date']),

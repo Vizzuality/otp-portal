@@ -1,0 +1,87 @@
+.c-documentation-pie-chart {
+  display: flex;
+  justify-content: space-between;
+
+  .c-doc-provided {
+    flex-grow: 7;
+  }
+
+  .pie-categories {
+    width: 286px;
+    margin-bottom: 14px;
+    flex-grow: 3;
+
+    .c-doc-by-category {
+      padding: 12px 0;
+    }
+
+    .doc-by-category-desc {
+      display: flex;
+      flex-direction: column-reverse;
+
+      .c-title {
+        font-size: 16px;
+        letter-spacing: 1px;
+        line-height: 19px;
+        text-align: right;
+        margin: 3px 0;
+      }
+
+      .doc-by-category-chart {
+        display: flex;
+        margin: 0;
+
+        font-size: 14px;
+        letter-spacing: 0;
+        line-height: 16px;
+        text-align: right;
+
+        .doc-by-category-bar {
+          margin-right: 8px;
+        }
+
+        span {
+          text-align: left;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+}
+
+.c-timeline-chart .c-custom-tooltip {
+  background-color: $color-tertiary;
+  width: 400px;
+  padding: 12px 20px;
+  color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 15px 29px 0 rgba(0, 0, 0, 0.14);
+
+  .date-label {
+    font-family: $font-family-proximanova;
+    font-size: 12px;
+    letter-spacing: 0.75px;
+    line-height: 14px;
+  }
+
+  .valid-count {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: 0;
+    line-height: 26px;
+  }
+
+  .tooltip-categories {
+    margin: 8px 0 0;
+
+    .tooltip-category {
+      font-family: $font-family-proximanova;
+      font-size: 12px;
+      letter-spacing: 0.75px;
+      line-height: 14px;
+
+      svg {
+        margin-right: 6px;
+      }
+    }
+  }
+}

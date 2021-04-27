@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
@@ -7,23 +7,38 @@ import { injectIntl, intlShape } from 'react-intl';
 
 // Utils
 import { HELPERS_OBS } from 'utils/observations';
+import { PALETTE_COLOR_1 } from 'constants/rechart';
 
 // components
 import Table from 'components/ui/table';
 import Icon from 'components/ui/icon';
-import Tooltip from 'rc-tooltip/dist/rc-tooltip';
+import CheckboxGroup from 'components/form/CheckboxGroup';
 
+import {
+  tableCheckboxes,
+  getColumnHeaders,
+} from 'constants/observations-column-headers';
 
 const MAX_ROWS_TABLE_ILLEGALITIES = 10;
 
 class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component {
-
   constructor(props) {
     super(props);
 
     this.state = {
       selected: {},
-      indexPagination: 0
+      indexPagination: 0,
+      columns: [
+        'status',
+        'date',
+        'country',
+        'operator',
+        'category',
+        'observation',
+        'level',
+        'fmu',
+        'report',
+      ],
     };
 
     // BINDINGS
@@ -33,14 +48,15 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
   /**
    * UI EVENTS
    * - triggerSelectedIllegality
-  */
+   */
   triggerSelectedIllegality({ category, illegality, year }) {
     const { selected } = this.state;
 
     // Toggle selected
-    if (selected.category === category &&
-        selected.illegality === illegality &&
-        selected.year === year
+    if (
+      selected.category === category &&
+      selected.illegality === illegality &&
+      selected.year === year
     ) {
       this.resetSelected();
     } else {
@@ -49,16 +65,16 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
         selected: {
           category,
           illegality,
-          year
-        }
+          year,
+        },
       });
     }
   }
 
-  resetSelected = () => {
+  resetSelected() {
     this.setState({
       indexPagination: 0,
-      selected: {}
+      selected: {},
     });
   }
 
@@ -67,54 +83,100 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
     const { data, year } = this.props;
     const groupedByCategory = HELPERS_OBS.getGroupedByCategory(data, year);
 
+    const changeOfLabelLookup = {
+      level: 'severity',
+      observation: 'detail',
+    };
+
+    const columnHeaders = getColumnHeaders(this.props.intl);
+    const inputs = tableCheckboxes;
+
+    const tableOptions = inputs.map((column) => ({
+      label: Object.keys(changeOfLabelLookup).includes(column)
+        ? this.props.intl.formatMessage({ id: changeOfLabelLookup[column] })
+        : this.props.intl.formatMessage({ id: column }),
+      value: column,
+    }));
+
     return (
       <div className="c-observations-by-illegality">
         {/* Charts */}
         <ul className="obi-category-list">
           {Object.keys(groupedByCategory).map((category) => {
-            const groupedByIllegality = HELPERS_OBS.getGroupedByIllegality(groupedByCategory[category]);
+            const groupedByIllegality = HELPERS_OBS.getGroupedByIllegality(
+              groupedByCategory[category]
+            );
 
             return (
               <li key={category} className="obi-category-list-item">
                 <div className="l-container">
-                  <h3 className="c-title -default -proximanova -uppercase obi-category-title">{category}</h3>
+                  <h3 className="c-title -default -proximanova -uppercase obi-category-title">
+                    {category}
+                  </h3>
                 </div>
 
                 <ul className="obi-illegality-list">
                   {Object.keys(groupedByIllegality).map((illegality) => {
                     const legalities = groupedByIllegality[illegality].length;
-                    const paginatedItems = MAX_ROWS_TABLE_ILLEGALITIES * this.state.indexPagination;
+                    const paginatedItems =
+                      MAX_ROWS_TABLE_ILLEGALITIES * this.state.indexPagination;
 
-                    const pageSize = (legalities - paginatedItems) > MAX_ROWS_TABLE_ILLEGALITIES ?
-                        MAX_ROWS_TABLE_ILLEGALITIES : (legalities - paginatedItems);
+                    const pageSize =
+                      legalities - paginatedItems > MAX_ROWS_TABLE_ILLEGALITIES
+                        ? MAX_ROWS_TABLE_ILLEGALITIES
+                        : legalities - paginatedItems;
 
-                    const isSelected = selected.category === category
-                      && selected.illegality === illegality
-                      && selected.year === year;
+                    const isSelected =
+                      selected.category === category &&
+                      selected.illegality === illegality &&
+                      selected.year === year;
 
                     const listItemClassNames = classnames({
-                      '-selected': isSelected
+                      '-selected': isSelected,
                     });
 
                     return (
                       <li key={category + illegality}>
                         <div className="l-container">
-                          <div className={`obi-illegality-list-item ${listItemClassNames}`}>
+                          <div
+                            className={`obi-illegality-list-item ${listItemClassNames}`}
+                          >
                             {/* Severity list */}
                             <ul className="obi-severity-list">
-                              {groupedByIllegality[illegality].map(({ severity, id }) =>
-                                <li key={id} className={`obi-severity-list-item -severity-${severity}`} />
+                              {groupedByIllegality[illegality].map(
+                                ({ level, id }) => {
+                                  if (level === 'null' || level === null)
+                                    return null;
+
+                                  return (
+                                    <li
+                                      key={id}
+                                      className={`obi-severity-list-item -severity-${level}`}
+                                      style={{
+                                        background: PALETTE_COLOR_1[level].fill,
+                                      }}
+                                    />
+                                  );
+                                }
                               )}
                             </ul>
 
                             {/* Illegality total */}
-                            <div className={`obi-illegality-total ${listItemClassNames}`}>{legalities}</div>
+                            <div
+                              className={`obi-illegality-total ${listItemClassNames}`}
+                            >
+                              {legalities}
+                            </div>
 
                             {/* Illegality title */}
                             <h4
                               className="c-title -default obi-illegality-title"
                               onClick={() =>
-                                this.triggerSelectedIllegality({ category, illegality, year })
+                                this.triggerSelectedIllegality({
+                                  category,
+                                  illegality,
+                                  year,
+                                })
                               }
                             >
                               {illegality}
@@ -123,7 +185,7 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
                         </div>
 
                         {/* Category */}
-                        {isSelected &&
+                        {isSelected && (
                           <div className="obi-illegality-info">
                             <div className="l-container">
                               <button
@@ -132,139 +194,52 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
                               >
                                 <Icon name="icon-cross" className="-big" />
                               </button>
-                              <h2 className="c-title obi-illegality-info-title">{illegality}</h2>
-                              {groupedByIllegality[illegality].length > 0 &&
-                                <Table
-                                  sortable
-                                  className="-light"
-                                  data={groupedByIllegality[illegality]}
-                                  options={{
-                                    pagination: legalities > MAX_ROWS_TABLE_ILLEGALITIES,
-                                    showPageSizeOptions: false,
-                                    columns: [
-                                      {
-                                        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'date' })}</span>,
-                                        accessor: 'date',
-                                        headerClassName: '-a-left',
-                                        className: '-a-left',
-                                        minWidth: 100,
-                                        Cell: (attr) => {
-                                          const date = new Date(attr.value);
-                                          const monthName = date ? date.toLocaleString('en-us', { month: 'short' }) : '-';
-                                          const year = date ? date.getFullYear() : '-';
-                                          return <span>{`${monthName} ${year}`}</span>;
-                                        }
-                                      },
-                                      {
-                                        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'severity' })}</span>,
-                                        accessor: 'severity',
-                                        headerClassName: '-a-center',
-                                        className: '-a-left severity',
-                                        minWidth: 150,
-                                        Cell: attr => <span className={`severity-item -sev-${attr.value}`}>{attr.value}</span>
-                                      },
-                                      {
-                                        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'status' })}</span>,
-                                        accessor: 'status',
-                                        headerClassName: '-a-left',
-                                        className: '-a-left status description',
-                                        minWidth: 150,
-                                        Cell: attr => (
-                                          <span>
-                                            {this.props.intl.formatMessage({ id: `observations.status-${attr.value}` })}
-
-                                            {[7, 8, 9].includes(attr.value) &&
-                                              <Tooltip
-                                                placement="bottom"
-                                                overlay={(
-                                                  <div style={{ maxWidth: 200 }}>
-                                                    {this.props.intl.formatMessage({ id: `observations.status-${attr.value}.info` })}
-                                                  </div>
-                                                )}
-                                                overlayClassName="c-tooltip no-pointer-events"
-                                              >
-                                                <button
-                                                  className="c-button -icon -tertiary"
-                                                >
-                                                  <Icon name="icon-info" className="-smaller" />
-                                                </button>
-                                              </Tooltip>
-                                            }
-                                          </span>
-                                        )
-                                                                      },
-                                      {
-                                        Header: <span>{this.props.intl.formatMessage({ id: 'description' })}</span>,
-                                        accessor: 'details',
-                                        headerClassName: '-a-left',
-                                        className: 'description',
-                                        sortable: false,
-                                        minWidth: 320,
-                                        Cell: attr => <p>{attr.value}</p>
-                                      },
-                                      {
-                                        Header: <span>{this.props.intl.formatMessage({ id: 'report' })}</span>,
-                                        accessor: 'report',
-                                        sortable: false,
-                                        headerClassName: '-a-left',
-                                        minWidth: 150,
-                                        Cell: (attr) => {
-                                          if (attr.value && attr.value.attachment && attr.value.attachment.url) {
-                                            return (
-                                              <a
-                                                className="evidence-link"
-                                                href={attr.value.attachment.url || '#'}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                title={attr.value.title}
-                                              >
-                                                {this.props.intl.formatMessage({ id: 'report' })}
-                                              </a>
-                                            );
-                                          }
-
-                                          return null;
-                                        }
-                                      },
-                                      {
-                                        Header: <span className="sortable">{this.props.intl.formatMessage({ id: 'evidence' })}</span>,
-                                        accessor: 'evidence',
-                                        headerClassName: '-a-left',
-                                        className: 'evidence description',
-                                        minWidth: 250,
-                                        Cell: attr => (
-                                          <div className="evidence-item-wrapper">
-                                            {Array.isArray(attr.value) &&
-                                              attr.value.map(v => (
-                                                <a
-                                                  href={v.attachment.url}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  className="evidence-item"
-                                                >
-                                                  <Icon className="" name="icon-file-empty" />
-                                                </a>
-                                              ))
-                                            }
-
-                                            {!Array.isArray(attr.value) &&
-                                              <span className="evidence-item-text">{attr.value}</span>
-                                            }
-
-                                          </div>
-                                        )
-                                      }
-                                    ],
-                                    nextPageSize: pageSize,
-                                    pageSize,
-                                    onPageChange: (indexPage) => {
-                                      this.setState({ indexPagination: indexPage });
+                              <h2 className="c-title obi-illegality-info-title">
+                                {illegality}
+                              </h2>
+                              {groupedByIllegality[illegality].length > 0 && (
+                                <Fragment>
+                                  <CheckboxGroup
+                                    className="-inline -single-row -light"
+                                    name="observations-columns"
+                                    onChange={(value) =>
+                                      this.setState({ columns: value })
                                     }
-                                  }}
-                                />}
+                                    properties={{
+                                      default: this.state.columns,
+                                      name: 'observations-columns',
+                                    }}
+                                    options={tableOptions}
+                                  />
+                                  <br />
+                                  <Table
+                                    sortable
+                                    className="-light"
+                                    data={groupedByIllegality[illegality]}
+                                    options={{
+                                      pagination:
+                                        legalities >
+                                        MAX_ROWS_TABLE_ILLEGALITIES,
+                                      showPageSizeOptions: false,
+                                      columns: columnHeaders.filter((header) =>
+                                        this.state.columns.includes(
+                                          header.accessor
+                                        )
+                                      ),
+                                      nextPageSize: pageSize,
+                                      pageSize,
+                                      onPageChange: (indexPage) => {
+                                        this.setState({
+                                          indexPagination: indexPage,
+                                        });
+                                      },
+                                    }}
+                                  />
+                                </Fragment>
+                              )}
                             </div>
                           </div>
-                        }
+                        )}
                       </li>
                     );
                   })}
@@ -281,7 +256,7 @@ class TotalObservationsByOperatorByCategorybyIlegallity extends React.Component 
 TotalObservationsByOperatorByCategorybyIlegallity.propTypes = {
   data: PropTypes.array,
   year: PropTypes.number,
-  intl: intlShape.isRequired
+  intl: intlShape.isRequired,
 };
 
 export default injectIntl(TotalObservationsByOperatorByCategorybyIlegallity);

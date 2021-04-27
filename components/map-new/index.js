@@ -235,7 +235,7 @@ class Map extends Component {
   onHover = e => {
     const { onHover } = this.props;
     const { features } = e;
-    if (features && features.length) {
+    if (!!onHover && features && features.length) {
       const { id, source, sourceLayer } = features[0];
 
       if (this.HOVER.id) {

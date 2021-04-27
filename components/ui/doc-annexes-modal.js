@@ -45,7 +45,7 @@ class DocAnnexesModal extends React.Component {
     title: PropTypes.string,
     intl: intlShape.isRequired,
     user: PropTypes.object,
-    id: PropTypes.string,
+    docId: PropTypes.string,
     onChange: PropTypes.func
   };
 
@@ -68,18 +68,24 @@ class DocAnnexesModal extends React.Component {
   }
 
   getBody() {
-    const { id } = this.props;
+    const { docId } = this.props;
 
     return {
       data: {
         type: 'operator-document-annexes', // TODO: Confirm if server side can accommodate -countries / -fmu
         attributes: {
-          'operator-document-id': id,
           name: this.state.form.name,
-          status: 'doc_valid',
           'start-date': this.state.form.startDate,
           'expire-date': this.state.form.expireDate,
           attachment: this.state.form.file
+        },
+        relationships: {
+          "operator-document": {
+            data: {
+              type: "operator-documents",
+              id: docId
+            }
+          }
         }
       }
     };

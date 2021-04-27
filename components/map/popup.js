@@ -33,7 +33,7 @@ export default function Popup(props) {
       }
 
       {list && operator && operator.id &&
-        <Link href={{ pathname: '/operators-detail', query: { id: operator.id, subtab: fmuType || 'fmu', tab: 'documentation', fmuId: id } }} as={`/operators/${operator.id}/documentation?fmuId=${id}&subtab=${fmuType || 'fmu'}`}>
+        <Link href={{ pathname: '/operators/detail', query: { id: operator.id, subtab: fmuType || 'fmu', tab: 'documentation', fmuId: id } }} as={`/operators/${operator.id}/documentation?fmuId=${id}&subtab=${fmuType || 'fmu'}`}>
           <a className="c-button -tertiary -fullwidth -ellipsis -small">
             Documentation
           </a>
@@ -49,7 +49,7 @@ export default function Popup(props) {
       }
 
       {operator && operator.id &&
-        <Link href={{ pathname: '/operators-detail', query: { id: operator.id } }} as={`/operators/${operator.id}`}>
+        <Link href={{ pathname: '/operators/detail', query: { id: operator.id } }} as={`/operators/${operator.id}`}>
           <a className="c-button -tertiary -fullwidth -ellipsis -small">
             {operator.name}
           </a>

@@ -50,10 +50,5 @@
     font-family: $font-family-proximanova;
     font-size: $font-size-small;
     font-weight: $font-weight-bold;
-
-    &.-severity-0 { background: $color-gray-3; }
-    &.-severity-1 { background: $color-primary; }
-    &.-severity-2 { background: $color-gray-1; }
-    &.-severity-3 { background: $color-secondary; }
   }
 }
