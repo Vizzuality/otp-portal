@@ -57,7 +57,7 @@ class CertificationsTd extends React.Component {
             }
             overlayClassName="c-tooltip no-pointer-events"
           >
-            <span>{obsPerVisit}</span>
+            <span>{obsPerVisit.toFixed(2)}</span>
           </Tooltip>
         }
         {!obsPerVisit && (
