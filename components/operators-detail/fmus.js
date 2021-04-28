@@ -135,7 +135,7 @@ class OperatorsDetailFMUs extends React.Component {
       e.features &&
       e.features.length &&
       !e.target.classList.contains('mapbox-prevent-click')
-    ) {
+      ) {
       // No better way to do this
       const { features, lngLat } = e;
       this.props.setOperatorsDetailMapInteractions({ features, lngLat });
