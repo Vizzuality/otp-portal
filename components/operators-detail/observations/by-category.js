@@ -82,7 +82,7 @@ export default class TotalObservationsByOperatorByCategory extends React.Compone
             const groupedBySeverity = HELPERS_OBS.getGroupedBySeverity(
               groupedByCategory[category],
               false,
-              'severity'
+              'level'
             );
 
             return (
